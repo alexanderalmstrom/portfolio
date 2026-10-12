@@ -48,16 +48,18 @@ Changes to the Contentful content model live in `migrations`. Running one requir
 npx contentful-cli space migration --space-id <space_id> --environment-id master --management-token <token> migrations/0_0_2.js
 ```
 
-## Deploy to Netlify
+## Deploy to Vercel
 
-Install netlify-cli.
+Pushes to `master` deploy to production and every other branch gets a preview deployment, through the Vercel Git integration. The build settings live in `vercel.json`, and the Contentful variables from `.env.example` have to be set in the Vercel project.
+
+To deploy by hand, install the Vercel CLI.
 
 ```bash
-npm install netlify-cli -g
+npm install vercel -g
 ```
 
-Deploy app.
+Deploy a preview, or pass `--prod` for production.
 
 ```bash
-netlify deploy
+vercel
 ```

@@ -31,7 +31,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), svgr(), serviceWorker()],
 
   // Expose the Contentful variables under their existing names, so .env and
-  // the Netlify environment do not need a VITE_ prefix.
+  // the Vercel environment do not need a VITE_ prefix.
   envPrefix: ['VITE_', 'CONTENTFUL_'],
 
   server: {
