@@ -20,8 +20,9 @@ const SIZES =
   '(min-width: 100rem) 41.25rem, (min-width: 90.9375rem) calc(50vw - 8.75rem), (min-width: 48rem) calc(50vw - 6.75rem), calc(100vw - 4rem)'
 
 // Two columns from sm up; the widths leave room for the grid's column gap
-// (see Home). The whole card, title included, fades in once its image has
-// loaded.
+// (see Home). Every image is cropped to the same 8:11 portrait, the ratio
+// most of them are uploaded in, so the rows line up. The whole card, title
+// included, fades in once its image has loaded.
 export default function Card({ entry, basename, loading }: CardProps) {
   const [isLoaded, handleLoaded] = useLoaded()
 
@@ -39,7 +40,7 @@ export default function Card({ entry, basename, loading }: CardProps) {
         to={`/${basename}/${slug}`}
         className="group relative block no-underline hover:text-inherit">
         {image ? (
-          <div className="overflow-hidden bg-black [&_img]:transition-[scale,opacity] [&_img]:duration-500 group-hover:[&_img]:scale-100 group-hover:[&_img]:opacity-100 can-hover:[&_img]:scale-103 can-hover:[&_img]:opacity-90">
+          <div className="aspect-8/11 overflow-hidden bg-black [&_img]:h-full [&_img]:object-cover [&_img]:transition-[scale,opacity] [&_img]:duration-500 group-hover:[&_img]:scale-100 group-hover:[&_img]:opacity-100 can-hover:[&_img]:scale-103 can-hover:[&_img]:opacity-90 [&_picture]:h-full">
             <ImageContentful
               image={image}
               width={1170}
