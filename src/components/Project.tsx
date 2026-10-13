@@ -53,9 +53,29 @@ export default function Project() {
 
   if (!entry) return <NotFound />
 
-  // Projects are ordered by date, and the last one links back to the first.
+  // Projects are ordered by date, and they wrap around: the last one links
+  // on to the first and the first one back to the last.
+  const previous = projects[(index || projects.length) - 1]
   const next = projects[(index + 1) % projects.length]
   const hasNext = next !== entry
+
+  // With only two projects the previous one is the next one as well. The
+  // classes are for the row the two scroll in on small screens (see below).
+  const links = [
+    ...(previous !== next
+      ? [
+          {
+            entry: previous,
+            label: 'Previous project',
+            className: 'max-sm:order-1 max-sm:snap-start',
+          },
+        ]
+      : []),
+    ...(hasNext
+      ? [{ entry: next, label: 'Next project', className: 'max-sm:snap-end' }]
+      : []),
+  ]
+  const isPair = links.length > 1
 
   const { blocks } = entry.fields
   const eagerBlock = firstImageBlock(blocks)
@@ -87,24 +107,39 @@ export default function Project() {
             : null}
         </section>
       </Container>
-      {/* Outside the container, so it is not held in by its side padding.
-          On small screens the negative margin cancels the bottom margin
-          of main (see Layout), so it ends the page. From sm up the bottom
-          margin, which that of main collapses into, is the space the last
-          block leaves above the card (see ContentBlock). */}
+      {/* Outside the container, so the cards run from edge to edge on small
+          screens. There the next project takes most of the width and the
+          previous one shows its edge to the left of it, in a row that
+          scrolls sideways. The row is reversed, which makes it start out
+          scrolled to its right end, and the order of the previous project
+          puts it back on the left. The negative margin cancels the bottom
+          margin of main (see Layout), so the cards end the page.
+
+          From sm up the two share the width. The side padding is that of
+          the container and of an image column together (see Container and
+          Image), which keeps the cards clear of the site title and in line
+          with the images above them. The bottom margin, which that of main
+          collapses into, is the space the last block leaves above the
+          cards (see ContentBlock).
+
+          A project that is the only other one is both the previous and the
+          next, and gets the whole width. */}
       {hasNext ? (
-        <footer className="-mb-6 sm:mb-8 md:mt-16 md:mb-32">
-          <Card
-            key={next.sys.id}
-            to={`/project/${next.fields.slug}`}
-            title={next.fields.name}
-            label="Next project"
-            image={next.fields.image}
-            width="full"
-            aspect="landscape"
-            titlePosition="center"
-            size="lg"
-          />
+        <footer className="mx-auto -mb-6 flex max-w-400 max-sm:snap-x max-sm:snap-mandatory max-sm:[scrollbar-width:none] max-sm:flex-row-reverse max-sm:overflow-x-auto max-sm:overscroll-x-contain sm:mb-8 sm:pr-16 sm:pl-38 md:mt-16 md:mb-32">
+          {links.map(({ entry, label, className }) => (
+            <Card
+              key={label}
+              to={`/project/${entry.fields.slug}`}
+              title={entry.fields.name}
+              label={label}
+              image={entry.fields.image}
+              width={isPair ? 'pair' : 'full'}
+              aspect={isPair ? 'portrait' : 'landscape'}
+              titlePosition="center"
+              size={isPair ? 'md' : 'lg'}
+              classNames={{ root: className }}
+            />
+          ))}
         </footer>
       ) : null}
     </article>
