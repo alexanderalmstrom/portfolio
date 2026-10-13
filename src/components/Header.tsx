@@ -41,7 +41,7 @@ export default function Header({ menuOpen, onMenuOpenChange }: HeaderProps) {
         </Link>
         <MobileNav open={menuOpen} onOpenChange={onMenuOpenChange} />
         <nav className="hidden sm:mr-7.5 sm:block">
-          <ul className="mb-0 list-none">
+          <ul className="mb-0">
             <li className="mb-0 overflow-hidden">
               <Link
                 className="block no-underline motion-safe:animate-rise"
