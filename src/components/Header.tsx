@@ -4,12 +4,19 @@ import { useSpace } from '../hooks/queries'
 
 import Logo from '../images/logo.svg?react'
 
+import MobileNav from './MobileNav'
+
 // Seconds between the logo, the title and the navigation starting to roll in.
 const STAGGER = 0.08
 
 // Each part rolls in through a mask when the site opens, like the heading of
 // a hero: its parent hides the overflow and the part itself rises into it.
-export default function Header() {
+interface HeaderProps {
+  menuOpen: boolean
+  onMenuOpenChange: (open: boolean) => void
+}
+
+export default function Header({ menuOpen, onMenuOpenChange }: HeaderProps) {
   const { data: space } = useSpace()
 
   return (
@@ -32,7 +39,8 @@ export default function Header() {
           <Logo className="size-full fill-foreground motion-safe:animate-rise" />
           <span className="sr-only">{space?.name}</span>
         </Link>
-        <nav className="sm:mr-7.5">
+        <MobileNav open={menuOpen} onOpenChange={onMenuOpenChange} />
+        <nav className="hidden sm:mr-7.5 sm:block">
           <ul className="mb-0 list-none">
             <li className="mb-0 overflow-hidden">
               <Link

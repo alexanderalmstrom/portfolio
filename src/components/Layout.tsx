@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 import Header from './Header'
@@ -8,10 +9,15 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
+  // The page behind the open menu of small screens cannot be reached.
+  const [menuOpen, setMenuOpen] = useState(false)
+
   return (
     <div>
-      <Header />
-      <main className="mb-6 pt-25 sm:pt-30">{children}</main>
+      <Header menuOpen={menuOpen} onMenuOpenChange={setMenuOpen} />
+      <main className="mb-6 pt-25 sm:pt-30" inert={menuOpen}>
+        {children}
+      </main>
       <Footer />
     </div>
   )
