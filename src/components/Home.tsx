@@ -30,8 +30,9 @@ export default function Home() {
                 return (
                   <Card
                     key={index}
-                    basename="project"
-                    entry={entry}
+                    to={`/project/${entry.fields.slug}`}
+                    title={entry.fields.name}
+                    image={entry.fields.image}
                     loading={index < 2 ? 'eager' : 'lazy'}
                   />
                 )

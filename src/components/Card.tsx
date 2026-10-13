@@ -1,104 +1,76 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import type { VariantProps } from 'tailwind-variants'
 
 import { useLoaded } from '../hooks/useLoaded'
 import { animateDown } from '../lib/animate'
-import { cn } from '../lib/cn'
-import type { ProjectEntry } from '../types/contentful'
+import type { ImageAsset } from '../types/contentful'
 
+import { CARD_IMAGE, cardVariants } from './Card.variants'
+import type { CardSlot } from './Card.variants'
 import ImageContentful from './ImageContentful'
 
-interface CardProps {
-  entry?: ProjectEntry
-  basename: string
+// hasImage follows from the image, so it is not a prop.
+type CardVariantProps = Omit<VariantProps<typeof cardVariants>, 'hasImage'>
+
+interface CardProps extends CardVariantProps {
+  to: string
+  title: ReactNode
+  // A line above the title, such as "Next project".
+  label?: ReactNode
+  image?: ImageAsset
   loading?: 'lazy' | 'eager'
-  // A card as wide as the viewport, up to the container's max width, instead
-  // of one of two columns, with a 16:9 image from sm up.
-  fullWidth?: boolean
-  // A line above the name, such as "Next project".
-  label?: string
+  // Extra classes for any slot, merged after those of the variants.
+  classNames?: Partial<Record<CardSlot, string>>
 }
 
-// How wide a card image is displayed: the viewport minus the grid's padding
-// on small screens, then half of what the container and the grid's padding
-// and gap leave (see Home and Container).
-const SIZES =
-  '(min-width: 100rem) 41.25rem, (min-width: 90.9375rem) calc(50vw - 8.75rem), (min-width: 48rem) calc(50vw - 6.75rem), calc(100vw - 4rem)'
-
-// A full width card fills the viewport up to its max width.
-const FULL_WIDTH_SIZES = '(min-width: 100rem) 100rem, 100vw'
-
-// Two columns from sm up; the widths leave room for the grid's column gap
-// (see Home). Every image is cropped to the same 8:11 portrait, the ratio
-// most of them are uploaded in, so the rows line up. The whole card, title
-// included, fades in once its image has loaded. A full width card keeps
-// the portrait on small screens and is cropped to 16:9 from sm up.
+// The whole card, title included, fades in once its image has loaded.
 export default function Card({
-  entry,
-  basename,
-  loading,
-  fullWidth = false,
+  to,
+  title,
   label,
+  image,
+  loading,
+  classNames,
+  width = 'half',
+  ...variants
 }: CardProps) {
   const [isLoaded, handleLoaded] = useLoaded()
 
-  if (!entry || !entry.fields) return null
-
-  const { image, name, slug } = entry.fields
+  const {
+    root: rootSlot,
+    link: linkSlot,
+    media: mediaSlot,
+    overlay: overlaySlot,
+    title: titleSlot,
+    label: labelSlot,
+  } = cardVariants({ ...variants, width, hasImage: Boolean(image) })
 
   return (
     <div
-      className={cn(
-        'w-full flex-none',
-        // A full width card stops growing at the container's max width.
-        fullWidth
-          ? 'mx-auto max-w-400'
-          : 'sm:w-[calc(50%-1rem)] xl:w-[calc(50%-2rem)]',
-        animateDown(isLoaded || !image),
-      )}>
-      <Link
-        to={`/${basename}/${slug}`}
-        className="group relative block no-underline hover:text-inherit">
+      className={rootSlot({
+        className: [animateDown(isLoaded || !image), classNames?.root],
+      })}>
+      <Link to={to} className={linkSlot({ className: classNames?.link })}>
         {image ? (
-          <div
-            className={cn(
-              'overflow-hidden bg-black [&_img]:h-full [&_img]:object-cover [&_img]:transition-[scale,opacity] [&_img]:duration-500 group-hover:[&_img]:scale-100 group-hover:[&_img]:opacity-100 can-hover:[&_img]:scale-103 can-hover:[&_img]:opacity-90 [&_picture]:h-full',
-              'aspect-8/11',
-              fullWidth && 'sm:aspect-video',
-            )}>
+          <div className={mediaSlot({ className: classNames?.media })}>
             <ImageContentful
               image={image}
-              width={fullWidth ? 2560 : 1170}
-              sizes={fullWidth ? FULL_WIDTH_SIZES : SIZES}
+              width={CARD_IMAGE[width].width}
+              sizes={CARD_IMAGE[width].sizes}
               loading={loading}
               onLoad={handleLoaded}
             />
           </div>
         ) : null}
-        {/* Without an image the title sits on a dark tile of its own. With
-            one, devices that can hover only reveal the title on hover. */}
-        <div
-          className={cn(
-            'inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent',
-            // A full width card lines its title up with the header.
-            fullWidth
-              ? 'p-8 pt-28 sm:p-16 sm:pt-36'
-              : 'p-4 pt-28 xl:p-6 xl:pt-36',
-            image
-              ? 'absolute transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100 can-hover:opacity-0'
-              : 'bg-neutral-900',
-          )}>
-          <h2
-            className={cn(
-              'mb-0 text-xl text-white md:text-2xl xl:text-3xl',
-              image &&
-                'transition-[translate] duration-500 group-hover:translate-y-0 group-focus-visible:translate-y-0 can-hover:translate-y-3',
-            )}>
+        <div className={overlaySlot({ className: classNames?.overlay })}>
+          <h2 className={titleSlot({ className: classNames?.title })}>
             {label ? (
-              <span className="mb-0.5 block text-sm font-normal tracking-normal text-white/70 xl:text-base">
+              <span className={labelSlot({ className: classNames?.label })}>
                 {label}
               </span>
             ) : null}
-            {name}
+            {title}
           </h2>
         </div>
       </Link>

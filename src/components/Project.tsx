@@ -65,10 +65,14 @@ export default function Project() {
         <footer className="-mb-6 sm:mb-8 md:mt-16 md:mb-32">
           <Card
             key={next.sys.id}
-            basename="project"
-            entry={next}
-            fullWidth
+            to={`/project/${next.fields.slug}`}
+            title={next.fields.name}
             label="Next project"
+            image={next.fields.image}
+            width="full"
+            aspect="landscape"
+            titlePosition="center"
+            size="lg"
           />
         </footer>
       ) : null}

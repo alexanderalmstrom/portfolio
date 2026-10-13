@@ -7,5 +7,5 @@
   "bracketSameLine": true,
   "plugins": ["prettier-plugin-tailwindcss"],
   "tailwindStylesheet": "./src/styles/index.css",
-  "tailwindFunctions": ["cn"]
+  "tailwindFunctions": ["cn", "tv"]
 }
