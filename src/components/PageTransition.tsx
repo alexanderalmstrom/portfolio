@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { AnimationEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useBlocker } from 'react-router-dom'
 import type { BlockerFunction } from 'react-router-dom'
 
 import { cn } from '../lib/cn'
+import { isCoverHeld, onCoverHeld } from '../lib/cover'
 import { prefetchPage } from '../lib/prefetch'
 
 import Grain from './Grain'
@@ -26,9 +27,15 @@ const isToAnotherPage: BlockerFunction = ({ currentLocation, nextLocation }) =>
 // screen, the page behind it is swapped for the next one, and the cover
 // goes on up and out at the top. The cover is clipped rather than
 // moved, so the triangle stays in the middle of the screen throughout.
+//
+// The next page can hold the cover while it gets something ready (see
+// lib/cover). A page that does so when it is opened directly, with no
+// cover up, is covered at once and uncovered the same way.
 export default function PageTransition() {
   const blocker = useBlocker(isToAnotherPage)
   const [stage, setStage] = useState<'idle' | 'covered' | 'leaving'>('idle')
+
+  const held = useSyncExternalStore(onCoverHeld, isCoverHeld)
 
   const queryClient = useQueryClient()
 
@@ -44,12 +51,28 @@ export default function PageTransition() {
 
   // The next page is let through after the hold, and the cover leaves once
   // it is there, which can take a while the first time a project or a page
-  // is opened (see App). It mounts as the cover starts to leave.
+  // is opened (see App). It mounts as the cover starts to leave, unless it
+  // holds the cover, which then leaves when it is let go of. With reduced
+  // motion the cover is only ever up for a page that holds it, and is
+  // taken away without being seen to leave.
   useEffect(() => {
+    if (stage == 'idle' && isCoverHeld() && blocker.state == 'unblocked') {
+      setStage('covered')
+      return
+    }
+
     if (stage != 'covered') return
 
     if (blocker.state == 'unblocked') {
-      setStage('leaving')
+      // Asked for now, as the next page takes hold of the cover while it
+      // mounts, which is after this was last rendered.
+      if (isCoverHeld()) return
+
+      setStage(
+        matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'idle'
+          : 'leaving',
+      )
       return
     }
 
@@ -58,7 +81,7 @@ export default function PageTransition() {
     const timeout = setTimeout(blocker.proceed, HOLD)
 
     return () => clearTimeout(timeout)
-  }, [stage, blocker])
+  }, [stage, blocker, held])
 
   // The page that is uncovered waits with its animations until the cover
   // has left (see the styles), so text does not rise in behind it.
@@ -85,7 +108,7 @@ export default function PageTransition() {
         'fixed inset-0 z-2000 bg-background',
         isEntering && 'animate-cover',
         stage == 'leaving' && 'animate-uncover',
-        stage == 'idle' && !isEntering && 'invisible',
+        stage == 'idle' && !isEntering && !held && 'invisible',
       )}
       aria-hidden="true"
       onAnimationEnd={onAnimationEnd}>
