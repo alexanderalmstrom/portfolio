@@ -30,10 +30,8 @@ export default function Header() {
           className="block size-7.5 overflow-hidden no-underline sm:size-10"
           to="/">
           <Logo className="size-full fill-foreground motion-safe:animate-rise" />
+          <span className="sr-only">{space?.name}</span>
         </Link>
-        <div className="hidden font-medium text-foreground">
-          <span>{space?.name}</span>
-        </div>
         <nav className="sm:mr-7.5">
           <ul className="mb-0 list-none">
             <li className="mb-0 overflow-hidden">
