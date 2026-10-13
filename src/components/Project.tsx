@@ -60,19 +60,33 @@ export default function Project() {
   const hasNext = next !== entry
 
   // With only two projects the previous one is the next one as well. The
-  // classes are for the row the two scroll in on small screens (see below).
+  // classes of the root are for the row the two scroll in on small screens
+  // (see below). Those of the media hold each image to the outer edge of
+  // its card from sm up, so it stays in place as the card grows.
   const links = [
     ...(previous !== next
       ? [
           {
             entry: previous,
             label: 'Previous project',
-            className: 'max-sm:order-1 max-sm:snap-start',
+            classNames: {
+              root: 'max-sm:order-1 max-sm:snap-start',
+              media: 'sm:[&_picture]:left-0',
+            },
           },
         ]
       : []),
     ...(hasNext
-      ? [{ entry: next, label: 'Next project', className: 'max-sm:snap-end' }]
+      ? [
+          {
+            entry: next,
+            label: 'Next project',
+            classNames: {
+              root: 'max-sm:snap-end',
+              media: 'sm:[&_picture]:right-0',
+            },
+          },
+        ]
       : []),
   ]
   const isPair = links.length > 1
@@ -115,7 +129,9 @@ export default function Project() {
           puts it back on the left. The negative margin cancels the bottom
           margin of main (see Layout), so the cards end the page.
 
-          From sm up the two share the width. The side padding is that of
+          From sm up the two share the width of a row that is as tall as
+          two portrait cards side by side are, and the one that is hovered
+          takes some of the width of the other. The side padding is that of
           the container and of an image column together (see Container and
           Image), which keeps the cards clear of the site title and in line
           with the images above them. The bottom margin, which that of main
@@ -125,21 +141,27 @@ export default function Project() {
           A project that is the only other one is both the previous and the
           next, and gets the whole width. */}
       {hasNext ? (
-        <footer className="mx-auto -mb-6 flex max-w-400 max-sm:snap-x max-sm:snap-mandatory max-sm:[scrollbar-width:none] max-sm:flex-row-reverse max-sm:overflow-x-auto max-sm:overscroll-x-contain sm:mb-8 sm:pr-16 sm:pl-38 md:mt-16 md:mb-32">
-          {links.map(({ entry, label, className }) => (
-            <Card
-              key={label}
-              to={`/project/${entry.fields.slug}`}
-              title={entry.fields.name}
-              label={label}
-              image={entry.fields.image}
-              width={isPair ? 'pair' : 'full'}
-              aspect={isPair ? 'portrait' : 'landscape'}
-              titlePosition="center"
-              size={isPair ? 'md' : 'lg'}
-              classNames={{ root: className }}
-            />
-          ))}
+        <footer className="mx-auto -mb-6 max-w-400 sm:mb-8 sm:pr-16 sm:pl-38 md:mt-16 md:mb-32">
+          <div
+            className={cn(
+              'flex max-sm:snap-x max-sm:snap-mandatory max-sm:[scrollbar-width:none] max-sm:flex-row-reverse max-sm:overflow-x-auto max-sm:overscroll-x-contain',
+              isPair && 'sm:aspect-16/11',
+            )}>
+            {links.map(({ entry, label, classNames }) => (
+              <Card
+                key={label}
+                to={`/project/${entry.fields.slug}`}
+                title={entry.fields.name}
+                label={label}
+                image={entry.fields.image}
+                width={isPair ? 'pair' : 'full'}
+                aspect={isPair ? 'portrait' : 'landscape'}
+                titlePosition="center"
+                size={isPair ? 'md' : 'lg'}
+                classNames={classNames}
+              />
+            ))}
+          </div>
         </footer>
       ) : null}
     </article>
