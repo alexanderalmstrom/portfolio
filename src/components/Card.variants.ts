@@ -20,10 +20,13 @@ export const cardVariants = tv({
   variants: {
     // Half leaves room for the column gap of a two column grid from sm up
     // (see Home). Full is as wide as the viewport, up to the container's max
-    // width.
+    // width. Pair is for two cards that sit side by side with nothing
+    // between them: half the row each from sm up, and most of it below,
+    // where the row scrolls and the rest shows the edge of the other card.
     width: {
       half: { root: 'sm:w-[calc(50%-1rem)] xl:w-[calc(50%-2rem)]' },
       full: { root: 'mx-auto max-w-400' },
+      pair: { root: 'w-4/5 sm:w-1/2' },
     },
     // Every image is cropped to the same ratio, so the rows of a grid line
     // up. Portrait is 8:11, the ratio most images are uploaded in. Landscape
@@ -93,7 +96,8 @@ export type CardSlot = keyof ReturnType<typeof cardVariants>
 // width card fills the viewport minus the grid's padding on small screens,
 // then half of what the container and the grid's padding and gap leave (see
 // Home and Container). A full width card fills the viewport up to its max
-// width.
+// width. Each card of a pair fills most of the viewport on small screens,
+// then half of what the padding around the pair leaves (see Project).
 export const CARD_IMAGE: Record<CardWidth, { width: number; sizes: string }> = {
   half: {
     width: 1170,
@@ -103,5 +107,10 @@ export const CARD_IMAGE: Record<CardWidth, { width: number; sizes: string }> = {
   full: {
     width: 2560,
     sizes: '(min-width: 100rem) 100rem, 100vw',
+  },
+  pair: {
+    width: 1600,
+    sizes:
+      '(min-width: 100rem) 43.25rem, (min-width: 48rem) calc(50vw - 6.75rem), 80vw',
   },
 }

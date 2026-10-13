@@ -35,7 +35,7 @@ export default function ContentBlock({
   // spaced whether they share a block or not. On small screens they sit
   // closer together than a block of text does to its neighbours.
   return (
-    <div className={cn('my-8 md:my-16', hasImage && 'my-4 sm:my-8')}>
+    <div className={cn('my-6 md:my-16', hasImage && 'my-4 sm:my-8')}>
       <Container
         nested
         className={cn(hasImage && 'gap-y-4 sm:gap-y-8 md:gap-y-16')}>
