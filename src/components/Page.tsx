@@ -55,7 +55,7 @@ export default function Page() {
             description={entry.fields.description}
           />
           {entry.fields.blocks?.length ? (
-            <section className="w-full flex-none [&_ul]:list-none [&_ul]:pl-0">
+            <section className="w-full flex-none">
               {entry.fields.blocks.map((entry, index) => {
                 return (
                   <Block

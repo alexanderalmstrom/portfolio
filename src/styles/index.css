@@ -513,11 +513,10 @@
   }
 
   /* Preflight strips list, quote and rule styling; restore the browser
-     defaults the Markdown content relies on. */
+     defaults the Markdown content relies on. Not for unordered lists, which
+     are set without bullets and in line with the text around them. */
   ul {
     margin: 0 0 1.25rem 0;
-    padding-left: 40px;
-    list-style: disc;
   }
 
   ol {

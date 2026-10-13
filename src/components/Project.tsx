@@ -156,7 +156,7 @@ export default function Project() {
             description={entry.fields.description}
           />
           <Title>{entry.fields.name}</Title>
-          <section className="w-full flex-none [&_ul]:list-none [&_ul]:pl-0">
+          <section className="w-full flex-none">
             {blocks
               ? blocks.map((entry, index) => {
                   // The first images are near the top of the page, so they

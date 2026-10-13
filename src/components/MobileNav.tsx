@@ -103,7 +103,7 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
         inert={!open}>
         <Grain />
         <nav>
-          <ul className="mb-0 list-none pl-0">
+          <ul className="mb-0">
             {LINKS.map(({ to, label }, index) => (
               <li key={to} className="mb-2 overflow-hidden pb-1">
                 <Link
