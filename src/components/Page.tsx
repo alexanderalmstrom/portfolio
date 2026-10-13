@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom'
 
 import { usePage, useSpace } from '../hooks/queries'
 import { firstImageBlock } from '../lib/blocks'
+import { PAGE_IMAGE } from '../lib/grid'
 import { markdown } from '../services/markdown'
 
 import Block from './Block'
@@ -48,12 +49,10 @@ export default function Page() {
           <header className="flex w-full flex-row-reverse flex-wrap items-start gap-y-8 sm:gap-y-16">
             {entry.fields.image ? (
               <div className="w-full flex-none sm:mb-0 sm:px-32 md:w-6/12 md:px-16 lg:w-4/12 xl:px-16">
-                {/* The full container from sm, half from md and a third from
-                    lg, minus the column's side padding (see lib/grid). */}
                 <ImageContentful
                   image={entry.fields.image}
-                  width={800}
-                  sizes="(min-width: 100rem) 22.17rem, (min-width: 75rem) calc(33.33vw - 11.17rem), (min-width: 62rem) calc(50vw - 12.75rem), (min-width: 48rem) calc(100vw - 25.5rem), 100vw"
+                  width={PAGE_IMAGE.width}
+                  sizes={PAGE_IMAGE.sizes}
                   loading={eagerBlock == -1 ? 'eager' : 'lazy'}
                 />
               </div>
