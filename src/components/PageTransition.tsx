@@ -11,7 +11,7 @@ import Loading from './Loading'
 
 // How long the cover stays in place, in milliseconds, so the triangle on it
 // is seen to turn.
-const HOLD = 400
+const HOLD = 200
 
 // Going from one page to another is held back for the cover to come in,
 // whether a link was followed or the visitor went back or forward. Not with
