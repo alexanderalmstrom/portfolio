@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import { useInView } from '../hooks/useInView'
 import { useLoaded } from '../hooks/useLoaded'
 import { cn } from '../lib/cn'
-import { columnClass, columnSizes } from '../lib/grid'
+import { columnClass, columnImageWidth, columnSizes } from '../lib/grid'
 import type { ImageEntry } from '../types/contentful'
 
 import ImageContentful from './ImageContentful'
@@ -21,16 +21,6 @@ interface ImageProps {
 
 // Seconds between the images of a row starting to slide in.
 const STAGGER = 0.1
-
-function imageWidth(size?: number) {
-  if (!size) return 1920
-
-  if (size <= 6) return 960
-
-  if (size <= 9) return 1280
-
-  return 1920
-}
 
 export default function Image({
   entry,
@@ -68,7 +58,7 @@ export default function Image({
         }>
         <ImageContentful
           image={image}
-          width={imageWidth(size)}
+          width={columnImageWidth(size)}
           sizes={columnSizes(size)}
           loading={loading}
           onLoad={slide ? handleLoaded : undefined}

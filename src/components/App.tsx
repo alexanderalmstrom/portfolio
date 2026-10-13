@@ -15,6 +15,7 @@ import Loading from './Loading'
 import BlueScreen from './BlueScreen'
 import NotFound from './NotFound'
 import Home from './Home'
+import PageTransition from './PageTransition'
 import SadMac from './SadMac'
 
 const appLoadedEvent = createEvent('APP_LOADED')
@@ -28,6 +29,7 @@ function Root() {
     <Layout>
       <Outlet />
       <ScrollRestoration />
+      <PageTransition />
     </Layout>
   )
 }

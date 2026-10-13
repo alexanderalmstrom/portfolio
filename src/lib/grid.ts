@@ -22,6 +22,18 @@ export function columnClass(size: number = 12) {
   return cn('w-full flex-none', columns[size] ?? columns[12])
 }
 
+// The largest width an image is requested in when it fills a column of the
+// given size.
+export function columnImageWidth(size?: number) {
+  if (!size) return 1920
+
+  if (size <= 6) return 960
+
+  if (size <= 9) return 1280
+
+  return 1920
+}
+
 // All in rem: the container's max width and side padding from sm up (see
 // Container), and the side padding of an image column.
 const CONTAINER_MAX = 100
@@ -43,4 +55,12 @@ export function columnSizes(size: number = 12) {
     `(min-width: 48rem) calc(${round(share * 100)}vw - ${round(offset)}rem)`,
     '100vw',
   ].join(', ')
+}
+
+// The image in the header of a page. It fills the container from sm, half of
+// it from md and a third from lg, minus the side padding of its column.
+export const PAGE_IMAGE = {
+  width: 800,
+  sizes:
+    '(min-width: 100rem) 22.17rem, (min-width: 75rem) calc(33.33vw - 11.17rem), (min-width: 62rem) calc(50vw - 12.75rem), (min-width: 48rem) calc(100vw - 25.5rem), 100vw',
 }
