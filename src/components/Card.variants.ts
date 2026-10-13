@@ -31,9 +31,9 @@ export const cardVariants = tv({
       landscape: { media: 'aspect-8/11 sm:aspect-video' },
     },
     // Where the title sits on the image: at the bottom, where devices that
-    // can hover only reveal it on hover, or always visible and, from sm up,
-    // centered over a darkened image. Both only apply with an image (see the
-    // compounds below).
+    // can hover only reveal it on hover, or always visible and centered over
+    // a darkened image. Both only apply with an image (see the compounds
+    // below).
     titlePosition: {
       bottom: {},
       center: {},
@@ -44,7 +44,7 @@ export const cardVariants = tv({
         label: 'mb-0.5 text-sm xl:text-base',
       },
       lg: {
-        title: 'text-2xl sm:text-4xl md:text-5xl xl:text-6xl',
+        title: 'text-3xl sm:text-4xl md:text-5xl xl:text-6xl',
         label: 'mb-0.5 text-sm sm:mb-2 sm:text-base xl:text-lg',
       },
     },
@@ -72,7 +72,7 @@ export const cardVariants = tv({
       titlePosition: 'center',
       className: {
         overlay:
-          'sm:inset-0 sm:flex sm:items-center sm:justify-center sm:bg-black/25 sm:bg-none sm:pt-6 sm:text-center xl:pt-8',
+          'inset-0 flex items-center justify-center bg-black/25 bg-none pt-6 text-center xl:pt-8',
       },
     },
   ],
