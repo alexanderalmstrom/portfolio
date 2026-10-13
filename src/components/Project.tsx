@@ -30,8 +30,10 @@ export default function Project() {
   const { blocks } = entry.fields
   const eagerBlock = firstImageBlock(blocks)
 
+  // Going from one project to the next keeps this component mounted. The key
+  // makes the page mount again, so its animations run as on a first visit.
   return (
-    <article className={cn(!hasNext && 'sm:mb-10')}>
+    <article key={entry.sys.id} className={cn(!hasNext && 'sm:mb-10')}>
       <Container>
         <DocumentMeta
           title={`${entry.fields.name} - ${space?.name}`}
