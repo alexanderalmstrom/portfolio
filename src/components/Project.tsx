@@ -1,7 +1,9 @@
 import { Fragment } from 'react'
+import type { ReactNode } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { useProjects, useSpace } from '../hooks/queries'
+import { useHeight } from '../hooks/useHeight'
 import { firstImageBlock } from '../lib/blocks'
 import { cn } from '../lib/cn'
 
@@ -38,6 +40,39 @@ function Title({ children }: { children: string }) {
         ))}
       </h1>
     </header>
+  )
+}
+
+// The cards of the previous and the next project, which the rest of the page
+// uncovers as it is scrolled away. They stay at the bottom of the screen,
+// behind the page, until the end of the page gets there. When they are
+// taller than the screen they stay at the top of it instead, and scroll the
+// rest of the way once they are uncovered.
+//
+// The cards run from edge to edge on small screens. There the next project
+// takes most of the width and the previous one shows its edge to the left
+// of it, in a row that scrolls sideways. The row is reversed, which makes
+// it start out scrolled to its right end, and the order of the previous
+// project puts it back on the left.
+//
+// From sm up the two share the width of a row that is as tall as two
+// portrait cards side by side are, and the one that is hovered takes some
+// of the width of the other. The side padding is that of the container and
+// of an image column together (see Container and Image), which keeps the
+// cards clear of the site title and in line with the images above them.
+// The space below the cards is padding, so it stays put along with them.
+//
+// A project that is the only other one is both the previous and the next,
+// and gets the whole width.
+function Links({ children }: { children: ReactNode }) {
+  const ref = useHeight<HTMLElement>()
+
+  return (
+    <footer
+      ref={ref}
+      className="sticky bottom-[min(0px,100svh_-_var(--height,0px))] mx-auto max-w-400 sm:pr-16 sm:pb-8 sm:pl-38 md:pb-32">
+      {children}
+    </footer>
   )
 }
 
@@ -96,52 +131,45 @@ export default function Project() {
 
   // Going from one project to the next keeps this component mounted. The key
   // makes the page mount again, so its animations run as on a first visit.
+  // An image that is about to slide in reaches past the right edge of a
+  // small screen, which is cut off here so the page cannot scroll sideways.
+  // The negative margin cancels the bottom margin of main (see Layout), so
+  // the cards end the page.
   return (
-    <article key={entry.sys.id} className={cn(!hasNext && 'sm:mb-10')}>
-      <Container>
-        <DocumentMeta
-          title={`${entry.fields.name} - ${space?.name}`}
-          description={entry.fields.description}
-        />
-        <Title>{entry.fields.name}</Title>
-        <section className="[&_ul]:list-none [&_ul]:pl-0">
-          {blocks
-            ? blocks.map((entry, index) => {
-                // The first images are near the top of the page, so they
-                // should not wait for lazy loading.
-                return (
-                  <Block
-                    key={index}
-                    entry={entry}
-                    loading={index == eagerBlock ? 'eager' : 'lazy'}
-                    rise
-                  />
-                )
-              })
-            : null}
-        </section>
-      </Container>
-      {/* Outside the container, so the cards run from edge to edge on small
-          screens. There the next project takes most of the width and the
-          previous one shows its edge to the left of it, in a row that
-          scrolls sideways. The row is reversed, which makes it start out
-          scrolled to its right end, and the order of the previous project
-          puts it back on the left. The negative margin cancels the bottom
-          margin of main (see Layout), so the cards end the page.
-
-          From sm up the two share the width of a row that is as tall as
-          two portrait cards side by side are, and the one that is hovered
-          takes some of the width of the other. The side padding is that of
-          the container and of an image column together (see Container and
-          Image), which keeps the cards clear of the site title and in line
-          with the images above them. The bottom margin, which that of main
-          collapses into, is the space the last block leaves above the
-          cards (see ContentBlock).
-
-          A project that is the only other one is both the previous and the
-          next, and gets the whole width. */}
+    <article
+      key={entry.sys.id}
+      className={cn('overflow-x-clip', hasNext ? '-mb-6' : 'sm:mb-10')}>
+      {/* What covers the cards below until it is scrolled away (see Links).
+          From md up the padding is the space the last block leaves above
+          them (see ContentBlock). */}
+      <div className={cn(hasNext && 'relative z-1 bg-background md:pb-16')}>
+        <Container>
+          <DocumentMeta
+            title={`${entry.fields.name} - ${space?.name}`}
+            description={entry.fields.description}
+          />
+          <Title>{entry.fields.name}</Title>
+          <section className="[&_ul]:list-none [&_ul]:pl-0">
+            {blocks
+              ? blocks.map((entry, index) => {
+                  // The first images are near the top of the page, so they
+                  // should not wait for lazy loading.
+                  return (
+                    <Block
+                      key={index}
+                      entry={entry}
+                      loading={index == eagerBlock ? 'eager' : 'lazy'}
+                      rise
+                      slide
+                    />
+                  )
+                })
+              : null}
+          </section>
+        </Container>
+      </div>
       {hasNext ? (
-        <footer className="mx-auto -mb-6 max-w-400 sm:mb-8 sm:pr-16 sm:pl-38 md:mt-16 md:mb-32">
+        <Links>
           <div
             className={cn(
               'flex max-sm:snap-x max-sm:snap-mandatory max-sm:[scrollbar-width:none] max-sm:flex-row-reverse max-sm:overflow-x-auto max-sm:overscroll-x-contain',
@@ -162,7 +190,7 @@ export default function Project() {
               />
             ))}
           </div>
-        </footer>
+        </Links>
       ) : null}
     </article>
   )

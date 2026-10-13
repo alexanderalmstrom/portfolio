@@ -10,12 +10,43 @@ interface ContentBlockProps {
   entry?: ContentBlockEntry
   loading?: 'lazy' | 'eager'
   rise?: boolean
+  slide?: boolean
+}
+
+// For each column, how many images come after it in its row. A row is full
+// when the sizes of its columns add up to the 12 of the grid (see lib/grid),
+// and a column without a size takes a whole row.
+function imagesAfter(columns: ContentBlockEntry['fields']['columns'] = []) {
+  const rows: number[] = []
+  let filled = 0
+
+  const placed = columns.map((entry) => {
+    // Contentful may hand a size over as text.
+    const size = Number(entry?.fields?.size) || 12
+
+    if (!rows.length || filled + size > 12) {
+      rows.push(0)
+      filled = 0
+    }
+
+    filled += size
+
+    const row = rows.length - 1
+    const isImage = Boolean(entry && isEntryOf(entry, 'image'))
+
+    return { row, before: isImage ? rows[row]++ : rows[row], isImage }
+  })
+
+  return placed.map(
+    ({ row, before, isImage }) => rows[row] - before - (isImage ? 1 : 0),
+  )
 }
 
 export default function ContentBlock({
   entry,
   loading,
   rise,
+  slide,
 }: ContentBlockProps) {
   if (!entry || !entry.fields) return null
 
@@ -29,6 +60,9 @@ export default function ContentBlock({
   const eagerColumn = loading == 'eager' ? firstImage : -1
 
   const hasImage = firstImage != -1
+
+  // The images of a row slide in from right to left, the way they move.
+  const after = imagesAfter(columns)
 
   // The margins of two blocks collapse into one, and the rows of images
   // within a block are kept as far apart as that, so images are evenly
@@ -53,6 +87,8 @@ export default function ContentBlock({
                     key={index}
                     entry={entry}
                     loading={index == eagerColumn ? 'eager' : 'lazy'}
+                    slide={slide}
+                    stagger={after[index]}
                   />
                 )
               }
