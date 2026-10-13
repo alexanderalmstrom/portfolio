@@ -25,10 +25,10 @@ export const cardVariants = tv({
     },
     // Every image is cropped to the same ratio, so the rows of a grid line
     // up. Portrait is 8:11, the ratio most images are uploaded in. Landscape
-    // keeps the portrait on small screens and is 16:9 from sm up.
+    // is square on small screens and 16:9 from sm up.
     aspect: {
       portrait: { media: 'aspect-8/11' },
-      landscape: { media: 'aspect-8/11 sm:aspect-video' },
+      landscape: { media: 'aspect-square sm:aspect-video' },
     },
     // Where the title sits on the image: at the bottom, where devices that
     // can hover only reveal it on hover, or always visible and centered over
@@ -96,7 +96,7 @@ export const CARD_IMAGE: Record<CardWidth, { width: number; sizes: string }> = {
   half: {
     width: 1170,
     sizes:
-      '(min-width: 100rem) 41.25rem, (min-width: 90.9375rem) calc(50vw - 8.75rem), (min-width: 48rem) calc(50vw - 6.75rem), calc(100vw - 4rem)',
+      '(min-width: 100rem) 41.25rem, (min-width: 90.9375rem) calc(50vw - 8.75rem), (min-width: 48rem) calc(50vw - 6.75rem), calc(100vw - 2rem)',
   },
   full: {
     width: 2560,

@@ -23,7 +23,7 @@ export default function Home() {
       ) : (
         <section>
           <Container className="xl:mt-10">
-            <div className="flex w-full flex-wrap gap-x-8 gap-y-8 px-8 sm:px-4 xl:mb-12 xl:gap-x-16 xl:gap-y-15 xl:px-8">
+            <div className="flex w-full flex-wrap gap-x-8 gap-y-4 px-4 sm:gap-y-8 xl:mb-12 xl:gap-x-16 xl:gap-y-15 xl:px-8">
               {projects.map((entry, index) => {
                 // The first row is above the fold, so it should not wait
                 // for lazy loading.
