@@ -23,14 +23,17 @@ const appLoadedEvent = createEvent('APP_LOADED')
 const ErrorScreen = isApple() ? SadMac : BlueScreen
 
 // ScrollRestoration scrolls to the top on a new navigation and back to where
-// the visitor was on back and forward. It needs a data router to work.
+// the visitor was on back and forward. It needs a data router to work. The
+// cover between two pages is not part of the page it covers.
 function Root() {
   return (
-    <Layout>
-      <Outlet />
-      <ScrollRestoration />
+    <>
+      <Layout>
+        <Outlet />
+        <ScrollRestoration />
+      </Layout>
       <PageTransition />
-    </Layout>
+    </>
   )
 }
 

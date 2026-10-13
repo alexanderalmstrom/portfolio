@@ -42,9 +42,6 @@
 
   --default-transition-timing-function: ease;
 
-  /* Almost at full speed right away, then a long time coming to rest. */
-  --ease-spin: cubic-bezier(0.05, 0.9, 0.1, 1);
-
   --animate-loading-spin: loading-spin 1s infinite;
   --animate-fade-in: fade-in 0.6s ease both;
   /* The sky of the not found page, which takes as long to appear as the
@@ -313,40 +310,6 @@
   }
 }
 
-/* The two shapes of the menu toggle: the triangle of the loading icon and a
-   star with four points. Both have eight points, in the same order, so one
-   can turn into the other: the corners and the bottom of the triangle become
-   the tips of the star and its sides are pulled in between them. The
-   triangle sits low in its box to spin around the point that is as far from
-   each of its corners, as the loading icon does. */
-@utility clip-triangle {
-  clip-path: polygon(
-    50% 25%,
-    66.67% 25%,
-    83.33% 25%,
-    66.67% 58.33%,
-    50% 91.67%,
-    33.33% 58.33%,
-    16.67% 25%,
-    33.33% 25%
-  );
-}
-
-/* The star is shown an eighth of a turn off, as a cross, so its points
-   reach further out than the triangle's corners to end up as wide. */
-@utility clip-star {
-  clip-path: polygon(
-    50% 2.9%,
-    59.4% 40.6%,
-    97.1% 50%,
-    59.4% 59.4%,
-    50% 97.1%,
-    40.6% 59.4%,
-    2.9% 50%,
-    40.6% 40.6%
-  );
-}
-
 /* Element-level styles. Page and project copy is Markdown from Contentful
    rendered as raw HTML, so it cannot carry utility classes. */
 @layer base {
@@ -368,6 +331,13 @@
   html {
     min-height: 100%;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* While the cover between two pages is up, the page behind it holds its
+     animations at their start. They run once the cover has left (see
+     PageTransition). */
+  :root[data-covered] main * {
+    animation-play-state: paused !important;
   }
 
   body {
