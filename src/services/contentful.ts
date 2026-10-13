@@ -1,14 +1,17 @@
-import { createClient } from 'contentful'
-import type { ContentfulClientApi, CreateClientParams } from 'contentful'
-import qs from 'query-string'
+import type { Space } from '../types/contentful'
 
-type Client = ContentfulClientApi<'WITHOUT_UNRESOLVABLE_LINKS'>
+import { resolveLinks } from './links'
+import type { Collection } from './links'
 
-let client: Client | undefined
+type Query = Record<string, string | number>
 
-export function getClient() {
-  if (client) return client
+// How long a request may take, in milliseconds. Retries are handled by the
+// query client.
+const TIMEOUT = 10000
 
+// The site only reads published content, or drafts in preview, so it talks
+// to the delivery API directly instead of through the Contentful SDK.
+function getConfig() {
   const {
     CONTENTFUL_SPACE_ID,
     CONTENTFUL_ACCESS_TOKEN,
@@ -20,28 +23,52 @@ export function getClient() {
     throw new Error('Contentful space id and access token is required in .env')
   }
 
-  const config: CreateClientParams = {
-    space: CONTENTFUL_SPACE_ID,
-    accessToken: CONTENTFUL_ACCESS_TOKEN,
-    // Retries are handled by the query client instead.
-    retryOnError: false,
-    timeout: 10000,
+  const preview = CONTENTFUL_PREVIEW_ACCESS_TOKEN && isPreview()
+
+  return {
+    space: `https://${preview ? 'preview' : 'cdn'}.contentful.com/spaces/${CONTENTFUL_SPACE_ID}`,
+    environment: CONTENTFUL_ENVIRONMENT || 'master',
+    accessToken: preview
+      ? CONTENTFUL_PREVIEW_ACCESS_TOKEN
+      : CONTENTFUL_ACCESS_TOKEN,
+  }
+}
+
+// The token goes in the query instead of a header, which saves the browser
+// from asking the API for permission before every request.
+async function request<Payload>(url: string, query: Query = {}) {
+  const params = new URLSearchParams({
+    ...Object.fromEntries(
+      Object.entries(query).map(([key, value]) => [key, String(value)]),
+    ),
+    access_token: getConfig().accessToken,
+  })
+
+  const response = await fetch(`${url}?${params}`, {
+    signal: AbortSignal.timeout(TIMEOUT),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Contentful responded with ${response.status}`)
   }
 
-  if (CONTENTFUL_PREVIEW_ACCESS_TOKEN && isPreview()) {
-    config.accessToken = CONTENTFUL_PREVIEW_ACCESS_TOKEN
-    config.host = 'preview.contentful.com'
-  } else {
-    config.host = 'cdn.contentful.com'
-  }
+  return response.json() as Promise<Payload>
+}
 
-  if (CONTENTFUL_ENVIRONMENT) {
-    config.environment = CONTENTFUL_ENVIRONMENT
-  }
+export function getSpace() {
+  return request<Space>(getConfig().space)
+}
 
-  client = createClient(config).withoutUnresolvableLinks
+// The entries that match a query, with what they link to in place.
+export async function getEntries<Item>(query: Query) {
+  const { space, environment } = getConfig()
 
-  return client
+  const collection = await request<Collection>(
+    `${space}/environments/${environment}/entries`,
+    query,
+  )
+
+  return resolveLinks<Item>(collection)
 }
 
 export function isPreview() {
@@ -51,5 +78,5 @@ export function isPreview() {
 
   if (import.meta.env.CONTENTFUL_PREVIEW == 'true') return true
 
-  return Boolean(qs.parse(location.search).preview)
+  return Boolean(new URLSearchParams(location.search).get('preview'))
 }

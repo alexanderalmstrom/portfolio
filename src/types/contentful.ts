@@ -1,93 +1,112 @@
-import type {
-  Asset,
-  Entry,
-  EntryFieldTypes,
-  EntrySkeletonType,
-} from 'contentful'
+// What the Contentful delivery API returns, written out for the content
+// model of this site. Links are resolved by the time anything is typed as
+// one of these (see resolveLinks), and a link to something that is not
+// published is left out.
 
-// The client is created with `withoutUnresolvableLinks`, so linked entries
-// and assets are either resolved or missing.
-type Modifiers = 'WITHOUT_UNRESOLVABLE_LINKS'
+export interface Space {
+  name: string
+}
 
-type Resolved<Skeleton extends EntrySkeletonType> = Entry<
-  Skeleton,
-  Modifiers,
-  string
->
+export interface Entry<ContentTypeId extends string, Fields> {
+  sys: {
+    id: string
+    type: 'Entry'
+    contentType: { sys: { id: ContentTypeId } }
+  }
+  fields: Fields
+}
 
-export type ColumnSkeleton = EntrySkeletonType<
+export interface ImageAsset {
+  sys: {
+    id: string
+    type: 'Asset'
+  }
+  fields: {
+    title?: string
+    description?: string
+    // An image or a video.
+    file?: {
+      url: string
+      fileName: string
+      contentType: string
+      details: {
+        size: number
+        // Only images have dimensions.
+        image?: { width: number; height: number }
+      }
+    }
+  }
+}
+
+export type ColumnEntry = Entry<
+  'column',
   {
-    content?: EntryFieldTypes.Text
-    size?: EntryFieldTypes.Integer
-  },
-  'column'
+    content?: string
+    size?: number
+  }
 >
 
-export type ImageSkeleton = EntrySkeletonType<
+export type ImageEntry = Entry<
+  'image',
   {
-    image?: EntryFieldTypes.AssetLink
-    size?: EntryFieldTypes.Integer
-  },
-  'image'
+    image?: ImageAsset
+    size?: number
+  }
 >
 
-export type ContentBlockSkeleton = EntrySkeletonType<
+export type ContentBlockEntry = Entry<
+  'content_block',
   {
-    columns?: EntryFieldTypes.Array<
-      EntryFieldTypes.EntryLink<ColumnSkeleton | ImageSkeleton>
-    >
-  },
-  'content_block'
+    columns?: (ColumnEntry | ImageEntry)[]
+  }
 >
 
-export type HeroSkeleton = EntrySkeletonType<
+export type HeroEntry = Entry<
+  'hero',
   {
     // An image or a video.
-    asset?: EntryFieldTypes.AssetLink
-    heading?: EntryFieldTypes.Text
-  },
-  'hero'
+    asset?: ImageAsset
+    heading?: string
+  }
 >
 
-export type BlockSkeleton = ContentBlockSkeleton | HeroSkeleton
+export type BlockEntry = ContentBlockEntry | HeroEntry
 
-export type ProjectSkeleton = EntrySkeletonType<
+export type ProjectEntry = Entry<
+  'project',
   {
-    name: EntryFieldTypes.Symbol
-    slug: EntryFieldTypes.Symbol
-    date?: EntryFieldTypes.Date
-    description?: EntryFieldTypes.Text
-    image?: EntryFieldTypes.AssetLink
-    blocks?: EntryFieldTypes.Array<EntryFieldTypes.EntryLink<BlockSkeleton>>
-  },
-  'project'
+    name: string
+    slug: string
+    date?: string
+    description?: string
+    image?: ImageAsset
+    blocks?: BlockEntry[]
+  }
 >
 
-export type PageSkeleton = EntrySkeletonType<
+export type PageEntry = Entry<
+  'page',
   {
-    name: EntryFieldTypes.Symbol
-    slug: EntryFieldTypes.Symbol
-    title?: EntryFieldTypes.Symbol
-    description?: EntryFieldTypes.Text
-    text?: EntryFieldTypes.Text
-    image?: EntryFieldTypes.AssetLink
-    blocks?: EntryFieldTypes.Array<EntryFieldTypes.EntryLink<BlockSkeleton>>
-  },
-  'page'
+    name: string
+    slug: string
+    title?: string
+    description?: string
+    text?: string
+    image?: ImageAsset
+    blocks?: BlockEntry[]
+  }
 >
 
-export type ColumnEntry = Resolved<ColumnSkeleton>
-export type ImageEntry = Resolved<ImageSkeleton>
-export type ContentBlockEntry = Resolved<ContentBlockSkeleton>
-export type HeroEntry = Resolved<HeroSkeleton>
-export type BlockEntry = Resolved<BlockSkeleton>
-export type ProjectEntry = Resolved<ProjectSkeleton>
-export type PageEntry = Resolved<PageSkeleton>
-export type ImageAsset = Asset<Modifiers, string>
+type AnyEntry = Entry<string, unknown>
 
-export function isEntryOf<Skeleton extends EntrySkeletonType>(
-  entry: Resolved<EntrySkeletonType>,
-  contentTypeId: Skeleton['contentTypeId'],
-): entry is Resolved<Skeleton> {
+// The content type sits too deep in an entry for TypeScript to narrow a
+// union of entries by it, so this does.
+export function isEntryOf<
+  Candidate extends AnyEntry,
+  ContentTypeId extends Candidate['sys']['contentType']['sys']['id'],
+>(
+  entry: Candidate,
+  contentTypeId: ContentTypeId,
+): entry is Extract<Candidate, Entry<ContentTypeId, unknown>> {
   return entry.sys.contentType.sys.id === contentTypeId
 }

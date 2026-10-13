@@ -1,5 +1,3 @@
-import qs from 'query-string'
-
 import { useLoaded } from '../hooks/useLoaded'
 import { animateIn } from '../lib/animate'
 import { cn } from '../lib/cn'
@@ -49,11 +47,11 @@ export default function ImageContentful({
   const widths = [...WIDTHS.filter((width) => width < largest), largest]
 
   const url = (fm: string, w: number) =>
-    `${file.url}?${qs.stringify({
+    `${file.url}?${new URLSearchParams({
+      ...(fm == 'jpg' && { fl: 'progressive' }),
       fm,
-      q: quality,
-      w,
-      fl: fm == 'jpg' ? 'progressive' : undefined,
+      q: String(quality),
+      w: String(w),
     })}`
 
   const srcSet = (fm: string) =>

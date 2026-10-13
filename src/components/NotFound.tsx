@@ -1,11 +1,22 @@
-import { Fragment, useEffect, useLayoutEffect, useState } from 'react'
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from 'react'
 import type { ReactNode } from 'react'
 
 import { cn } from '../lib/cn'
 
 import Container from './Container'
 import DocumentMeta from './DocumentMeta'
-import Starfield from './Starfield'
+
+// The sky is by far the largest part of the site and only this page shows
+// it, so it is loaded when the page is. It fades in, so nothing has to take
+// its place until then.
+const Starfield = lazy(() => import('./Starfield'))
 
 interface GlitchProps {
   children: ReactNode
@@ -253,7 +264,9 @@ export default function NotFound() {
   return (
     <Container className="mt-10">
       <DocumentMeta title="Page not found" />
-      <Starfield className="pointer-events-none fixed inset-0 -z-1 size-full motion-safe:animate-dawn" />
+      <Suspense>
+        <Starfield className="pointer-events-none fixed inset-0 -z-1 size-full motion-safe:animate-dawn" />
+      </Suspense>
       {/* Everything but the heading is set in the typeface of the
           readouts. The heading grows with the width of the screen. */}
       <div className="w-full flex-none px-8 font-mono text-[0.8125rem] lg:px-16">

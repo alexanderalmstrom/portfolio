@@ -1,13 +1,10 @@
-import type { EntriesQueries, EntrySkeletonType } from 'contentful'
+import type { Entry } from '../types/contentful'
 
-import { getClient } from './contentful'
+import * as contentful from './contentful'
 
-// Field based queries cannot be checked against a generic skeleton, so the
-// query objects are asserted instead.
-type Query<Skeleton extends EntrySkeletonType> = EntriesQueries<
-  Skeleton,
-  'WITHOUT_UNRESOLVABLE_LINKS'
->
+type AnyEntry = Entry<string, unknown>
+type ContentTypeId<Item extends AnyEntry> =
+  Item['sys']['contentType']['sys']['id']
 
 export class EntryNotFoundError extends Error {
   constructor() {
@@ -15,35 +12,31 @@ export class EntryNotFoundError extends Error {
   }
 }
 
-export function getEntries<Skeleton extends EntrySkeletonType>(
-  content_type: Skeleton['contentTypeId'],
+export function getEntries<Item extends AnyEntry>(
+  content_type: ContentTypeId<Item>,
 ) {
-  return getClient()
-    .getEntries<Skeleton>({
-      content_type: content_type,
-      order: ['-fields.date'],
-      include: 2,
-    } as Query<Skeleton>)
-    .then((payload) => {
-      return payload.items
-    })
+  return contentful.getEntries<Item>({
+    content_type: content_type,
+    order: '-fields.date',
+    include: 2,
+  })
 }
 
-export function getEntryBySlug<Skeleton extends EntrySkeletonType>(
-  content_type: Skeleton['contentTypeId'],
+export function getEntryBySlug<Item extends AnyEntry>(
+  content_type: ContentTypeId<Item>,
   slug: string,
 ) {
-  return getClient()
-    .getEntries<Skeleton>({
+  return contentful
+    .getEntries<Item>({
       content_type: content_type,
       'fields.slug': slug,
       include: 2,
-    } as Query<Skeleton>)
-    .then((payload) => {
-      if (!payload.items.length) {
+    })
+    .then((items) => {
+      if (!items.length) {
         throw new EntryNotFoundError()
       }
 
-      return payload.items[0]
+      return items[0]
     })
 }

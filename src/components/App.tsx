@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import type { ComponentType } from 'react'
 import {
   createBrowserRouter,
   Outlet,
@@ -14,8 +15,6 @@ import Loading from './Loading'
 import BlueScreen from './BlueScreen'
 import NotFound from './NotFound'
 import Home from './Home'
-import Project from './Project'
-import Page from './Page'
 import SadMac from './SadMac'
 
 const appLoadedEvent = createEvent('APP_LOADED')
@@ -33,13 +32,21 @@ function Root() {
   )
 }
 
+// A project or a page is loaded when it is first opened, along with what
+// only they use. The page that is showing stays until the next one is ready.
+function lazyRoute(load: () => Promise<{ default: ComponentType }>) {
+  return () => load().then((module) => ({ Component: module.default }))
+}
+
 const router = createBrowserRouter([
   {
     element: <Root />,
+    // Shown when the site is opened on a project or a page.
+    hydrateFallbackElement: <Loading />,
     children: [
       { path: '/', element: <Home /> },
-      { path: '/project/:slug', element: <Project /> },
-      { path: '/page/:slug', element: <Page /> },
+      { path: '/project/:slug', lazy: lazyRoute(() => import('./Project')) },
+      { path: '/page/:slug', lazy: lazyRoute(() => import('./Page')) },
       { path: '*', element: <NotFound /> },
     ],
   },
