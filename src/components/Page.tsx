@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import { usePage, useSpace } from '../hooks/queries'
 import { HEADINGS, SETTLE_REST, useRiseLines } from '../hooks/useRiseLines'
 import { firstImageBlock } from '../lib/blocks'
+import { cn } from '../lib/cn'
 import { PAGE_IMAGE } from '../lib/grid'
 import { markdown } from '../services/markdown'
 
@@ -28,7 +29,10 @@ function Text({ title, text }: { title?: string; text?: string }) {
       ref={ref}
       className="w-full flex-none px-8 md:w-6/12 lg:w-8/12 lg:px-16">
       {title ? <h1>{title}</h1> : null}
-      <div className={SETTLE_REST} dangerouslySetInnerHTML={html} />
+      <div
+        className={cn(SETTLE_REST, 'text-foreground/60')}
+        dangerouslySetInnerHTML={html}
+      />
     </div>
   )
 }
