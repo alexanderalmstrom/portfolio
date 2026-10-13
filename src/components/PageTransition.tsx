@@ -43,8 +43,7 @@ export default function PageTransition() {
 
   // The next page is let through after the hold, and the cover leaves once
   // it is there, which can take a while the first time a project or a page
-  // is opened (see App). It mounts as the cover starts to leave, so its own
-  // animations run as it is uncovered.
+  // is opened (see App). It mounts as the cover starts to leave.
   useEffect(() => {
     if (stage != 'covered') return
 
@@ -59,6 +58,18 @@ export default function PageTransition() {
 
     return () => clearTimeout(timeout)
   }, [stage, blocker])
+
+  // The page that is uncovered waits with its animations until the cover
+  // has left (see the styles), so text does not rise in behind it.
+  useEffect(() => {
+    if (stage == 'idle') return
+
+    document.documentElement.dataset.covered = ''
+
+    return () => {
+      delete document.documentElement.dataset.covered
+    }
+  }, [stage])
 
   // The triangle never stops turning, so only the cover itself ends.
   const onAnimationEnd = (event: AnimationEvent) => {

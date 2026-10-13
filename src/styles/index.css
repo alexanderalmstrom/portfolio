@@ -370,6 +370,13 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* While the cover between two pages is up, the page behind it holds its
+     animations at their start. They run once the cover has left (see
+     PageTransition). */
+  :root[data-covered] main * {
+    animation-play-state: paused !important;
+  }
+
   body {
     font-weight: 400;
     font-size: 0.9375rem;
