@@ -576,16 +576,49 @@ const sky = `
     float facing = smoothstep(0.08, 0.45, normal.z) * smoothstep(0.97, 0.8, abs(place.y));
     float billows = mix(0.5, clouds(sky * vec2(160.0, 80.0)), facing);
     float wisps = smoothstep(0.55, 0.85, clouds(sky * vec2(70.0, 35.0) + 31.0)) * facing;
-    float cover = smoothstep(
-      0.08,
-      0.85,
-      texture2D(uClouds, sky).r * (0.5 + billows) + wisps * billows * 0.5
+    float thick = texture2D(uClouds, sky).r * (0.5 + billows);
+    float cover = smoothstep(0.08, 0.85, thick + wisps * billows * 0.5);
+    // Clouds stand up from the ground. Where there is less of them on the
+    // way to the sun, which is to the west, than there is right here, they
+    // face it and are lit, and where there is more they lie in the shade of
+    // the cloud beside them. The billows are lit the same way, each on its
+    // own. So a cloud is white on top and grey-blue in its folds.
+    float heaped = clamp(
+      (thick - texture2D(uClouds, sky - vec2(0.0012, 0.0)).r * (0.5 + billows)) * 4.0,
+      -1.0,
+      1.0
     );
-    // The clouds between a place and the sun, which is to the west of it,
-    // leave it in their shadow.
-    float shadow = smoothstep(0.2, 0.9, texture2D(uClouds, sky - vec2(0.004, 0.0)).r);
+    vec3 vapour = mix(
+      vec3(0.46, 0.53, 0.66),
+      vec3(1.0),
+      clamp(0.66 + 0.45 * heaped + 0.7 * (billows - 0.5) * facing, 0.0, 1.0)
+    );
 
-    ground *= 1.0 - 0.4 * shadow;
+    // Water is the part of the map that is more blue than red.
+    float sea = smoothstep(0.02, 0.12, map.b - map.r);
+    // The map is flat, so the land is given some relief: what is paler to
+    // the east of a place than to the west of it is taken for ground that
+    // rises that way and faces the sun, and the other way round for ground
+    // that is turned from it. On top of that comes a grain finer than the
+    // map has, which keeps the land from going soft this close up.
+    vec2 beside = vec2(1.5 / 4096.0, 0.0);
+    float rise = dot(texture2D(uDay, at - turn + beside).rgb, vec3(0.333))
+      - dot(texture2D(uDay, at - turn - beside).rgb, vec3(0.333));
+    float grit = 0.6 * noise((at - turn) * vec2(2600.0, 1300.0))
+      + 0.4 * noise((at - turn) * vec2(6400.0, 3200.0));
+
+    ground *= 1.0 + clamp(rise * 3.0, -0.35, 0.45) * (1.0 - sea) * facing;
+    ground *= 1.0 + (grit - 0.5) * 0.22 * (1.0 - 0.6 * sea) * facing;
+
+    // The clouds between a place and the sun leave it in their shadow,
+    // which falls a little to the east of them, as they are high up.
+    float shadow = smoothstep(
+      0.2,
+      0.9,
+      texture2D(uClouds, sky - vec2(0.004, 0.0)).r * (0.5 + billows)
+    );
+
+    ground *= 1.0 - 0.5 * shadow;
 
     // No lightning strikes while the earth is held and turned by hand: the
     // storms keep their place on the screen, not on the ground.
@@ -593,13 +626,11 @@ const sky = `
 
     float sun = dot(normal, SUN);
     float day = smoothstep(-0.12, 0.3, sun);
-    // Water is the part of the map that is more blue than red.
-    float sea = smoothstep(0.02, 0.12, map.b - map.r);
     // The sun mirrored in the sea: a bright spot with a wide sheen around.
     float mirror = max(reflect(-SUN, normal).z, 0.0);
     float glint = (pow(mirror, 70.0) * 0.9 + pow(mirror, 8.0) * 0.07) * sea * (1.0 - cover);
 
-    vec3 lit = mix(ground * 1.25 + glint, vec3(0.92), cover);
+    vec3 lit = mix(ground * 1.25 + glint, vapour * 0.95, cover);
 
     lit *= 0.2 + 0.8 * clamp(sun, 0.0, 1.0);
     // Sunlight turns red where it reaches the ground at a low angle.
