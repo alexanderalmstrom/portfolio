@@ -50,6 +50,10 @@
   --animate-rise: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-settle: settle 0.6s ease both;
   --animate-slide: slide 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* The film grain (see Grain). One turn through its eight frames, so it
+     changes 16 times a second. Each frame is held until the next one, as
+     grain that slides reads as a texture that moves. */
+  --animate-grain: grain 0.3s step-end infinite;
   /* The cover between two pages (see PageTransition). */
   --animate-cover: cover 0.7s cubic-bezier(0.76, 0, 0.24, 1) both;
   --animate-uncover: uncover 0.7s cubic-bezier(0.76, 0, 0.24, 1) both;
@@ -257,6 +261,44 @@
     to {
       opacity: 1;
       translate: 0 0;
+    }
+  }
+
+  /* Each frame moves the grain by less than it reaches past the screen and
+     mirrors it another way than the frame before, the last and the first
+     included. The eye follows noise that is only moved, and mirroring it
+     leaves nothing to follow. */
+  @keyframes grain {
+    0% {
+      transform: translate(0, 0);
+    }
+
+    12.5% {
+      transform: translate(-38px, -21px) scaleX(-1);
+    }
+
+    25% {
+      transform: translate(26px, -44px) scale(-1, -1);
+    }
+
+    37.5% {
+      transform: translate(45px, 31px) scaleY(-1);
+    }
+
+    50% {
+      transform: translate(-17px, 40px);
+    }
+
+    62.5% {
+      transform: translate(33px, -12px) scale(-1, -1);
+    }
+
+    75% {
+      transform: translate(-46px, -35px) scaleX(-1);
+    }
+
+    87.5% {
+      transform: translate(12px, 46px) scaleY(-1);
     }
   }
 

@@ -8,6 +8,7 @@ import { firstImageBlock } from '../lib/blocks'
 import { cn } from '../lib/cn'
 
 import Container from './Container'
+import Grain from './Grain'
 import DocumentMeta from './DocumentMeta'
 import Loading from './Loading'
 import NotFound from './NotFound'
@@ -141,8 +142,14 @@ export default function Project() {
       className={cn('overflow-x-clip', hasNext ? '-mb-6' : 'sm:mb-10')}>
       {/* What covers the cards below until it is scrolled away (see Links).
           From md up the padding is the space the last block leaves above
-          them (see ContentBlock). */}
-      <div className={cn(hasNext && 'relative z-1 bg-background md:pb-16')}>
+          them (see ContentBlock). Its background hides the grain of the
+          page, so it holds a grain of its own, which is clipped to it as
+          it would lie over the cards as well. */}
+      <div
+        className={cn(
+          hasNext && 'relative z-1 bg-background [clip-path:inset(0)] md:pb-16',
+        )}>
+        {hasNext ? <Grain /> : null}
         <Container>
           <DocumentMeta
             title={`${entry.fields.name} - ${space?.name}`}

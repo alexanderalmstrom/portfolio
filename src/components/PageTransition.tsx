@@ -7,6 +7,7 @@ import type { BlockerFunction } from 'react-router-dom'
 import { cn } from '../lib/cn'
 import { prefetchPage } from '../lib/prefetch'
 
+import Grain from './Grain'
 import Loading from './Loading'
 
 // How long the cover stays in place, in milliseconds, so the triangle on it
@@ -88,6 +89,7 @@ export default function PageTransition() {
       )}
       aria-hidden="true"
       onAnimationEnd={onAnimationEnd}>
+      <Grain />
       <Loading />
     </div>
   )

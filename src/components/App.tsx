@@ -10,6 +10,7 @@ import {
 import { useSpace } from '../hooks/queries'
 import { createEvent, isApple } from '../services/helpers'
 
+import Grain from './Grain'
 import Layout from './Layout'
 import Loading from './Loading'
 import BlueScreen from './BlueScreen'
@@ -71,6 +72,7 @@ export default function App() {
       {status == 'error' ? <ErrorScreen onRestart={() => refetch()} /> : null}
       {status == 'success' ? <RouterProvider router={router} /> : null}
       {status == 'pending' ? <Loading /> : null}
+      <Grain />
     </div>
   )
 }

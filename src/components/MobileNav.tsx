@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 
 import { cn } from '../lib/cn'
 
+import Grain from './Grain'
+
 const LINKS = [{ to: '/page/about', label: 'About' }]
 
 // Seconds between the links starting to rise in when the dialog opens, and
@@ -99,6 +101,7 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
         aria-modal="true"
         aria-label="Menu"
         inert={!open}>
+        <Grain />
         <nav>
           <ul className="mb-0 list-none pl-0">
             {LINKS.map(({ to, label }, index) => (
