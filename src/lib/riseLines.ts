@@ -10,29 +10,46 @@ const MAX_STAGGERED = 10
 function measureLines(element: HTMLElement) {
   const lines: Range[] = []
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
-  const word = document.createRange()
+  const part = document.createRange()
   let bottom = 0
+
+  // Adds the text from start to end, which has no spaces in it, to the line
+  // it is rendered on.
+  const place = (node: Node, start: number, end: number) => {
+    part.setStart(node, start)
+    part.setEnd(node, end)
+
+    const rects = part.getClientRects()
+    const rect = rects[0] ?? part.getBoundingClientRect()
+    const last = rects[rects.length - 1] ?? rect
+
+    // A word can wrap within itself, as after a hyphen or a dash. Its
+    // characters are then placed one by one, so each part of it ends up on
+    // its own line.
+    if (end - start > 1 && last.top + last.height / 2 > rect.bottom) {
+      for (let index = start; index < end; index++) {
+        place(node, index, index + 1)
+      }
+
+      return
+    }
+
+    // A new line starts with the text whose middle is below the line so far.
+    if (!lines.length || rect.top + rect.height / 2 > bottom) {
+      const line = document.createRange()
+
+      line.setStart(node, start)
+      lines.push(line)
+      bottom = rect.bottom
+    }
+
+    lines[lines.length - 1].setEnd(node, end)
+    bottom = Math.max(bottom, rect.bottom)
+  }
 
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     for (const match of (node.nodeValue ?? '').matchAll(/\S+/g)) {
-      const end = match.index + match[0].length
-
-      word.setStart(node, match.index)
-      word.setEnd(node, end)
-
-      const rect = word.getBoundingClientRect()
-
-      // A word starts a new line when its middle is below the line so far.
-      if (!lines.length || rect.top + rect.height / 2 > bottom) {
-        const line = document.createRange()
-
-        line.setStart(node, match.index)
-        lines.push(line)
-        bottom = rect.bottom
-      }
-
-      lines[lines.length - 1].setEnd(node, end)
-      bottom = Math.max(bottom, rect.bottom)
+      place(node, match.index, match.index + match[0].length)
     }
   }
 
