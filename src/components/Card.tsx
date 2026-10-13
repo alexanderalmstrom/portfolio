@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import type { VariantProps } from 'tailwind-variants'
+import type { VariantProps } from 'tailwind-variants/lite'
 
 import { useLoaded } from '../hooks/useLoaded'
 import { animateIn } from '../lib/animate'
+import { cn } from '../lib/cn'
 import type { ImageAsset } from '../types/contentful'
 
 import { CARD_IMAGE, cardVariants } from './Card.variants'
@@ -51,12 +52,14 @@ export default function Card({
 
   return (
     <div
-      className={rootSlot({
-        className: [animateIn(isLoaded || !image, rise), classNames?.root],
-      })}>
-      <Link to={to} className={linkSlot({ className: classNames?.link })}>
+      className={cn(
+        rootSlot({
+          className: [animateIn(isLoaded || !image, rise), classNames?.root],
+        }),
+      )}>
+      <Link to={to} className={cn(linkSlot({ className: classNames?.link }))}>
         {image ? (
-          <div className={mediaSlot({ className: classNames?.media })}>
+          <div className={cn(mediaSlot({ className: classNames?.media }))}>
             <ImageContentful
               image={image}
               width={CARD_IMAGE[width].width}
@@ -66,10 +69,10 @@ export default function Card({
             />
           </div>
         ) : null}
-        <div className={overlaySlot({ className: classNames?.overlay })}>
-          <h2 className={titleSlot({ className: classNames?.title })}>
+        <div className={cn(overlaySlot({ className: classNames?.overlay }))}>
+          <h2 className={cn(titleSlot({ className: classNames?.title }))}>
             {label ? (
-              <span className={labelSlot({ className: classNames?.label })}>
+              <span className={cn(labelSlot({ className: classNames?.label }))}>
                 {label}
               </span>
             ) : null}

@@ -1,9 +1,5 @@
 import { cn } from '../lib/cn'
-import type {
-  ColumnSkeleton,
-  ContentBlockEntry,
-  ImageSkeleton,
-} from '../types/contentful'
+import type { ContentBlockEntry } from '../types/contentful'
 import { isEntryOf } from '../types/contentful'
 
 import Column from './Column'
@@ -26,7 +22,7 @@ export default function ContentBlock({
   const { columns } = entry.fields
 
   const firstImage = (columns ?? []).findIndex(
-    (entry) => entry && isEntryOf<ImageSkeleton>(entry, 'image'),
+    (entry) => entry && isEntryOf(entry, 'image'),
   )
 
   // A block can stack several images, so only its first one loads eagerly.
@@ -47,11 +43,11 @@ export default function ContentBlock({
           ? columns.map((entry, index) => {
               if (!entry) return null
 
-              if (isEntryOf<ColumnSkeleton>(entry, 'column')) {
+              if (isEntryOf(entry, 'column')) {
                 return <Column key={index} entry={entry} rise={rise} />
               }
 
-              if (isEntryOf<ImageSkeleton>(entry, 'image')) {
+              if (isEntryOf(entry, 'image')) {
                 return (
                   <Image
                     key={index}

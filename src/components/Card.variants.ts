@@ -1,9 +1,11 @@
-import { tv } from 'tailwind-variants'
+import { tv } from 'tailwind-variants/lite'
 
 import type { VariantOption } from '../lib/utils/variants'
 
 // Every part of the card is a slot, and each variant only sets the slots it
 // changes. The variants are independent, so they can be combined freely.
+// The lite build only joins the classes of a slot, so Card passes them
+// through cn for a variant to win over what it overrides.
 export const cardVariants = tv({
   slots: {
     root: 'w-full flex-none',

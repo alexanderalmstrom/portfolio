@@ -1,4 +1,4 @@
-import type { VariantProps } from 'tailwind-variants'
+import type { VariantProps } from 'tailwind-variants/lite'
 
 /**
  * The shape `tv()` returns: a callable that also carries its resolved config.

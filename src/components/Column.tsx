@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useRiseLines } from '../hooks/useRiseLines'
 import { cn } from '../lib/cn'
 import { columnClass } from '../lib/grid'
-import { markdown } from '../services/helpers'
+import { markdown } from '../services/markdown'
 import type { ColumnEntry } from '../types/contentful'
 
 interface ColumnProps {

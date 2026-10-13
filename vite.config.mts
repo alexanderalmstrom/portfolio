@@ -41,5 +41,27 @@ export default defineConfig({
 
   build: {
     outDir: 'build',
+
+    // What comes from node_modules changes far less often than the site
+    // does, so it gets files of its own that stay cached between deploys.
+    // Marked is left out to stay with the pages that are loaded on demand.
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react',
+              test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/,
+              priority: 2,
+            },
+            {
+              name: 'vendor',
+              test: /node_modules[\\/](?!marked[\\/])[^.]/,
+              priority: 1,
+            },
+          ],
+        },
+      },
+    },
   },
 })

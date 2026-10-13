@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 
 import { usePage, useSpace } from '../hooks/queries'
 import { firstImageBlock } from '../lib/blocks'
-import { markdown } from '../services/helpers'
+import { markdown } from '../services/markdown'
 
 import Block from './Block'
 import Container from './Container'
