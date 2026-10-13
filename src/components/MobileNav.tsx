@@ -7,6 +7,17 @@ import Grain from './Grain'
 
 const LINKS = [{ to: '/page/about', label: 'About' }]
 
+// What the dialog says at its bottom about who to get in touch with: the
+// title first, then the ways to do it.
+const TITLE = 'Senior Frontend Engineer / Designer'
+const CONTACT = [
+  {
+    href: 'mailto:info@alexanderalmstrom.com',
+    label: 'info@alexanderalmstrom.com',
+  },
+  { href: 'tel:+46763395288', label: '+46 76 339 52 88' },
+]
+
 // Seconds between the links starting to rise in when the dialog opens, and
 // how long the first one waits for the dialog to fade in.
 const STAGGER = 0.08
@@ -119,6 +130,30 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
             ))}
           </ul>
         </nav>
+        {/* Set in the grey of the body text (see Column), and rising in
+            line by line after the links. */}
+        <address className="absolute inset-x-12 bottom-10 text-foreground/60 not-italic">
+          {[
+            TITLE,
+            ...CONTACT.map(({ href, label }) => (
+              <a
+                className="text-inherit no-underline hover:underline"
+                href={href}>
+                {label}
+              </a>
+            )),
+          ].map((line, index) => (
+            <span key={index} className="block overflow-hidden py-0.5">
+              <span
+                className={cn('block', open && 'motion-safe:animate-rise')}
+                style={{
+                  animationDelay: `${DELAY + STAGGER * (LINKS.length + index)}s`,
+                }}>
+                {line}
+              </span>
+            </span>
+          ))}
+        </address>
       </div>
     </>
   )
