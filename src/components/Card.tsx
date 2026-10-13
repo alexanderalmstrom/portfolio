@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import type { VariantProps } from 'tailwind-variants'
 
 import { useLoaded } from '../hooks/useLoaded'
-import { animateDown } from '../lib/animate'
+import { animateIn } from '../lib/animate'
 import type { ImageAsset } from '../types/contentful'
 
 import { CARD_IMAGE, cardVariants } from './Card.variants'
@@ -20,6 +20,8 @@ interface CardProps extends CardVariantProps {
   label?: ReactNode
   image?: ImageAsset
   loading?: 'lazy' | 'eager'
+  // The card also moves up into place as it fades in.
+  rise?: boolean
   // Extra classes for any slot, merged after those of the variants.
   classNames?: Partial<Record<CardSlot, string>>
 }
@@ -31,6 +33,7 @@ export default function Card({
   label,
   image,
   loading,
+  rise,
   classNames,
   width = 'half',
   ...variants
@@ -49,7 +52,7 @@ export default function Card({
   return (
     <div
       className={rootSlot({
-        className: [animateDown(isLoaded || !image), classNames?.root],
+        className: [animateIn(isLoaded || !image, rise), classNames?.root],
       })}>
       <Link to={to} className={linkSlot({ className: classNames?.link })}>
         {image ? (

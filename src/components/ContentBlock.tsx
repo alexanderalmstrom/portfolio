@@ -13,9 +13,14 @@ import Image from './Image'
 interface ContentBlockProps {
   entry?: ContentBlockEntry
   loading?: 'lazy' | 'eager'
+  rise?: boolean
 }
 
-export default function ContentBlock({ entry, loading }: ContentBlockProps) {
+export default function ContentBlock({
+  entry,
+  loading,
+  rise,
+}: ContentBlockProps) {
   if (!entry || !entry.fields) return null
 
   const { columns } = entry.fields
@@ -43,7 +48,7 @@ export default function ContentBlock({ entry, loading }: ContentBlockProps) {
               if (!entry) return null
 
               if (isEntryOf<ColumnSkeleton>(entry, 'column')) {
-                return <Column key={index} entry={entry} />
+                return <Column key={index} entry={entry} rise={rise} />
               }
 
               if (isEntryOf<ImageSkeleton>(entry, 'image')) {

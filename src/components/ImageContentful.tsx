@@ -1,7 +1,7 @@
 import qs from 'query-string'
 
 import { useLoaded } from '../hooks/useLoaded'
-import { animateDown } from '../lib/animate'
+import { animateIn } from '../lib/animate'
 import { cn } from '../lib/cn'
 import type { ImageAsset } from '../types/contentful'
 
@@ -62,7 +62,7 @@ export default function ImageContentful({
   // Setting the size on the img reserves its space before it loads, so the
   // page already has its full height when a scroll position is restored.
   return (
-    <picture className={cn('block', !onLoad && animateDown(isLoaded))}>
+    <picture className={cn('block', !onLoad && animateIn(isLoaded))}>
       <source type="image/webp" srcSet={srcSet('webp')} sizes={sizes} />
       {/* A failed image is shown as well, so its alt text is not left hidden. */}
       <img

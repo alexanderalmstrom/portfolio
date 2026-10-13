@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { useProjects, useSpace } from '../hooks/queries'
@@ -10,6 +11,35 @@ import Loading from './Loading'
 import NotFound from './NotFound'
 import Block from './Block'
 import Card from './Card'
+
+// Seconds between each word starting to rise.
+const STAGGER = 0.08
+
+// The project name rises word by word, each through a mask of its own, the
+// same way the heading of a hero does (see Hero).
+function Title({ children }: { children: string }) {
+  const words = children.trim().split(/\s+/)
+
+  return (
+    <header className="mt-10 w-full flex-none px-8 sm:text-center">
+      <h1 className="mb-0 xl:text-8xl" aria-label={words.join(' ')}>
+        {words.map((word, index) => (
+          <Fragment key={index}>
+            <span
+              aria-hidden="true"
+              className="-mb-[0.15em] inline-block overflow-hidden pb-[0.15em] align-bottom">
+              <span
+                className="inline-block motion-safe:animate-rise"
+                style={{ animationDelay: `${index * STAGGER}s` }}>
+                {word}
+              </span>
+            </span>{' '}
+          </Fragment>
+        ))}
+      </h1>
+    </header>
+  )
+}
 
 export default function Project() {
   const { slug } = useParams()
@@ -39,9 +69,7 @@ export default function Project() {
           title={`${entry.fields.name} - ${space?.name}`}
           description={entry.fields.description}
         />
-        <header className="mt-10 w-full flex-none px-8 motion-safe:animate-settle sm:text-center">
-          <h1 className="mb-0 xl:text-8xl">{entry.fields.name}</h1>
-        </header>
+        <Title>{entry.fields.name}</Title>
         <section className="[&_ul]:list-none [&_ul]:pl-0">
           {blocks
             ? blocks.map((entry, index) => {
@@ -52,6 +80,7 @@ export default function Project() {
                     key={index}
                     entry={entry}
                     loading={index == eagerBlock ? 'eager' : 'lazy'}
+                    rise
                   />
                 )
               })

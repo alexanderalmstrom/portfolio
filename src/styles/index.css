@@ -219,12 +219,11 @@
     }
   }
 
-  /* Text fades in and settles from above when its page opens, the same way
-     an image does once it has loaded (see lib/animate). */
+  /* Text fades in and settles from below when its page opens. */
   @keyframes settle {
     from {
       opacity: 0;
-      translate: 0 -1.25rem;
+      translate: 0 1.25rem;
     }
 
     to {

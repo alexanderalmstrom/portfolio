@@ -34,6 +34,7 @@ export default function Home() {
                     title={entry.fields.name}
                     image={entry.fields.image}
                     loading={index < 2 ? 'eager' : 'lazy'}
+                    rise
                   />
                 )
               })}
