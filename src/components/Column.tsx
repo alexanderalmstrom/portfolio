@@ -28,7 +28,7 @@ export default function Column({ entry, rise = false }: ColumnProps) {
       ref={ref}
       className={cn(
         columnClass(size),
-        'px-8',
+        'px-8 text-foreground/60',
         !rise && 'motion-safe:animate-settle',
       )}
       dangerouslySetInnerHTML={html}
