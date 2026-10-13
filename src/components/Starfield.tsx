@@ -10,6 +10,35 @@ import moonSurface from '../images/moon.jpg'
 
 interface StarfieldProps {
   className?: string
+  // Called when the sky has been drawn in full for the first time, or when
+  // it turns out that it never will be.
+  onReady?: () => void
+}
+
+// The maps, by the name the shader knows each by.
+const MAPS = {
+  uDay: earthDay,
+  uNight: earthNight,
+  uClouds: earthClouds,
+  uMoon: moonSurface,
+}
+
+// How much of the sharpness of the screen the sky is drawn in, from 0 for
+// not measured yet. The sky is a lot to draw on a large and sharp screen,
+// so when it is first shown a frame of it is timed, and it is drawn less
+// sharp if that is what it takes to keep up with the screen, though never
+// less sharp than a screen of ordinary sharpness shows. That is kept for
+// the next time it is shown.
+let share = 0
+
+// The milliseconds a frame may take to draw, and what it is brought down
+// to when it takes longer.
+const SLOW = 14
+const SMOOTH = 11
+
+// Gets the maps ahead of the sky being shown (see lib/prefetch).
+export function preloadMaps() {
+  for (const source of Object.values(MAPS)) new Image().src = source
 }
 
 const STARS = 2600
@@ -19,12 +48,7 @@ const STARS = 2600
 const FLIGHT = 260
 
 // The spot on the earth that faces the camera, in degrees north and east.
-// Once its maps have loaded the earth fades in over DAWN seconds, and takes
-// ARRIVAL seconds to slide up into place while its spin slows down to the
-// speed it keeps afterwards.
 const FACING = { latitude: 40, longitude: 14 }
-const DAWN = 2
-const ARRIVAL = 5
 
 // Where the earth is and how large: its middle as a part of the way from
 // the middle of the screen to the right edge, and how far it lies below the
@@ -164,8 +188,6 @@ const sky = `
   uniform sampler2D uClouds;
   uniform sampler2D uMoon;
   uniform mat3 uGlobe;
-  uniform float uDawn;
-  uniform float uArrival;
   uniform float uHeld;
 
   ${exposure}
@@ -506,10 +528,7 @@ const sky = `
   vec4 earth(vec2 point, vec2 centre, float radius) {
     vec2 disc = (point - centre) / radius;
     float reach = length(disc);
-    // While it arrives the earth is spun back a little under a tenth of a
-    // turn, which it makes up fast at first and ever more slowly, until
-    // what is left of its spin is exactly the speed it keeps afterwards.
-    vec2 turn = vec2(uSeconds / DAY - 0.08 * pow(1.0 - uArrival, 3.0), 0.0);
+    vec2 turn = vec2(uSeconds / DAY, 0.0);
     // What is right at the edge, seen from the side: how much of the sun's
     // light the air there catches, and the northern lights, which stand
     // high enough over the ground to show past it.
@@ -753,7 +772,7 @@ const sky = `
     gl_FragColor = expose(light);
 
     // The earth rises over the bottom of the screen, the moon far behind
-    // it. Neither is lit until their maps are there.
+    // it.
     vec2 home = vec2(
       edge.x * mix(${EARTH.upright.toFixed(2)}, ${EARTH.right.toFixed(2)}, wide),
       -edge.y - ${EARTH.below}
@@ -763,10 +782,6 @@ const sky = `
     float orbit = -uSeconds / 3600.0 * 6.2831853;
     vec2 away = vec2(edge.x * -0.05, -edge.y + 0.52) - home;
     vec2 around = home + mat2(cos(orbit), sin(orbit), -sin(orbit), cos(orbit)) * away;
-
-    // The earth comes up from below the screen, fast at first and ever
-    // more slowly as it reaches its place.
-    float settled = 1.0 - pow(1.0 - uArrival, 3.0);
 
     // The moon is lit from where the sun is past the screen, which is a
     // little nearer the camera than the moon is, so that slightly more
@@ -780,16 +795,10 @@ const sky = `
       normalize(vec3(normalize(seat - around), 0.12)),
       normalize(vec3(normalize(home - around) * 0.6, 0.8))
     );
-    vec4 globe = earth(point, home - vec2(0.0, 0.32 * (1.0 - settled)), ${EARTH.radius});
+    vec4 globe = earth(point, home, ${EARTH.radius});
 
-    // Both hide the stars behind them from the start, and come out of the
-    // dark instead of out of thin air: only their light fades in. The glow
-    // of the air past the edge of the earth, which hides nothing, fades in
-    // whole.
-    gl_FragColor = vec4(rock.rgb * uDawn, rock.a) + gl_FragColor * (1.0 - rock.a);
-
-    globe.rgb *= uDawn;
-    globe.a *= mix(uDawn, 1.0, smoothstep(0.85, 1.0, globe.a));
+    // Both hide the stars behind them.
+    gl_FragColor = rock + gl_FragColor * (1.0 - rock.a);
     gl_FragColor = globe + gl_FragColor * (1.0 - globe.a);
   }
 `
@@ -890,8 +899,13 @@ function link(gl: WebGLRenderingContext, vertex: string, fragment: string) {
 // The night sky behind the not found page, drawn with WebGL: a field of
 // stars the camera drifts through, and the far sky, the earth and the moon
 // as one shader over the whole screen. Without WebGL the canvas simply stays empty.
-export default function Starfield({ className }: StarfieldProps) {
+export default function Starfield({ className, onReady }: StarfieldProps) {
   const ref = useRef<HTMLCanvasElement>(null)
+  const ready = useRef(onReady)
+
+  useEffect(() => {
+    ready.current = onReady
+  }, [onReady])
   // A canvas only ever has the one context, and a context that is lost
   // stays lost. So when that happens the canvas is replaced by a new one,
   // which this counts, and the sky is set up again on that.
@@ -901,7 +915,7 @@ export default function Starfield({ className }: StarfieldProps) {
     const canvas = ref.current
     const gl = canvas?.getContext('webgl', { antialias: false })
 
-    if (!canvas || !gl) return
+    if (!canvas || !gl) return ready.current?.()
 
     function replace() {
       setAttempt((attempt) => Math.min(attempt + 1, ATTEMPTS))
@@ -919,7 +933,7 @@ export default function Starfield({ className }: StarfieldProps) {
     )
     const starProgram = link(gl, starVertex, starFragment)
 
-    if (!skyProgram || !starProgram) return
+    if (!skyProgram || !starProgram) return ready.current?.()
 
     // One triangle that covers the screen.
     const corners = gl.createBuffer()
@@ -953,21 +967,16 @@ export default function Starfield({ className }: StarfieldProps) {
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
-    // The maps each keep a texture slot of their own. The earth and the
-    // moon are left out until all of them have arrived.
-    const maps = {
-      uDay: earthDay,
-      uNight: earthNight,
-      uClouds: earthClouds,
-      uMoon: moonSurface,
-    }
+    // The maps each keep a texture slot of their own.
     const sharpest = gl.getExtension('EXT_texture_filter_anisotropic')
-    let waiting = Object.keys(maps).length
-    let arrived = 0
+    let waiting = Object.keys(MAPS).length
     let gone = false
 
-    Object.values(maps).forEach((source, slot) => {
+    Object.values(MAPS).forEach((source, slot) => {
       const image = new Image()
+
+      // Without one of its maps there is no sky to wait for.
+      image.onerror = () => ready.current?.()
 
       image.onload = () => {
         if (gone) return
@@ -994,18 +1003,15 @@ export default function Starfield({ className }: StarfieldProps) {
           )
         }
 
-        if (--waiting == 0) {
-          arrived = performance.now()
-          // A sky that holds still is not drawn again by itself.
-          if (still.matches) draw()
-        }
+        // Nothing is drawn until all of the maps are there.
+        if (--waiting == 0) arrive()
       }
 
       image.src = source
     })
 
     gl.useProgram(skyProgram)
-    Object.keys(maps).forEach((name, slot) => {
+    Object.keys(MAPS).forEach((name, slot) => {
       gl.uniform1i(gl.getUniformLocation(skyProgram, name), slot)
     })
 
@@ -1018,6 +1024,7 @@ export default function Starfield({ className }: StarfieldProps) {
     function lost() {
       gone = true
       cancelAnimationFrame(frame)
+      ready.current?.()
       replace()
     }
 
@@ -1033,6 +1040,9 @@ export default function Starfield({ className }: StarfieldProps) {
     } = { orientation: globe(), spin: { right: 0, down: 0 } }
     let held: { x: number; y: number; at: number } | null = null
     let drawn = start
+    // The seconds the sky has been moving for, which is what it goes by:
+    // not the time since it was set up, as it stands still now and then.
+    let clock = 0
 
     // The short side of the screen, which the earth is measured in.
     function side() {
@@ -1093,7 +1103,7 @@ export default function Starfield({ className }: StarfieldProps) {
       held = { x: place.clientX, y: place.clientY, at }
 
       // A sky that holds still is not drawn again by itself.
-      if (still.matches) draw()
+      if (still.matches) render()
     }
 
     function letGo(at: number) {
@@ -1182,8 +1192,60 @@ export default function Starfield({ className }: StarfieldProps) {
       }
     }
 
+    // The first frame takes the longest, as the graphics card sets itself
+    // up for the shaders. The one after it is timed, the first time, to
+    // see how sharp the sky can be drawn (see share). Reading a pixel back
+    // waits for the graphics card to be done, which is what makes the time
+    // it took known, and leaves it with nothing to catch up on. Only then
+    // is the sky said to be ready, with all of that out of the way, and
+    // left to run. A sky that holds still is not drawn again by itself.
+    function arrive() {
+      const pixel = new Uint8Array(4)
+
+      function timed() {
+        const from = performance.now()
+
+        render()
+        gl!.readPixels(0, 0, 1, 1, gl!.RGBA, gl!.UNSIGNED_BYTE, pixel)
+
+        return performance.now() - from
+      }
+
+      timed()
+
+      if (!share) {
+        const cost = timed()
+
+        share =
+          cost > SLOW
+            ? Math.max(
+                Math.sqrt(SMOOTH / cost),
+                1 / Math.min(window.devicePixelRatio, 2),
+              )
+            : 1
+
+        if (share < 1) timed()
+      }
+
+      frame = requestAnimationFrame(() => {
+        if (gone) return
+
+        ready.current?.()
+        if (!still.matches) draw()
+      })
+    }
+
+    // The sky holds still under the cover between two pages, so the cover
+    // is not slowed down as it leaves. Its clock stops as well, so nothing
+    // has moved when it goes on.
     function draw() {
-      const ratio = Math.min(window.devicePixelRatio, 2)
+      if (!('covered' in document.documentElement.dataset)) render()
+
+      frame = requestAnimationFrame(draw)
+    }
+
+    function render() {
+      const ratio = Math.min(window.devicePixelRatio, 2) * (share || 1)
       const width = Math.round(canvas!.clientWidth * ratio)
       const height = Math.round(canvas!.clientHeight * ratio)
 
@@ -1199,6 +1261,7 @@ export default function Starfield({ className }: StarfieldProps) {
       const elapsed = Math.min((now - drawn) / 1000, 0.05)
 
       drawn = now
+      clock += elapsed
 
       const { right, down } = earth.spin
 
@@ -1214,7 +1277,7 @@ export default function Starfield({ className }: StarfieldProps) {
       }
 
       const shared = {
-        uSeconds: (performance.now() - start) / 1000,
+        uSeconds: clock,
         uPixelRatio: ratio,
       }
 
@@ -1240,14 +1303,6 @@ export default function Starfield({ className }: StarfieldProps) {
       attribute(skyProgram!, 'aCorner', 2, 0, 0)
       uniforms(skyProgram!, {
         ...shared,
-        uDawn:
-          waiting || still.matches
-            ? Number(!waiting)
-            : Math.min((performance.now() - arrived) / 1000 / DAWN, 1),
-        uArrival:
-          waiting || still.matches
-            ? Number(!waiting)
-            : Math.min((performance.now() - arrived) / 1000 / ARRIVAL, 1),
         uHeld: Number(Boolean(held)),
       })
       gl!.uniform2f(
@@ -1261,12 +1316,7 @@ export default function Starfield({ className }: StarfieldProps) {
         Float32Array.from(earth.orientation),
       )
       gl!.drawArrays(gl!.TRIANGLES, 0, 3)
-
-      // A sky that holds still needs to be drawn only once.
-      if (!still.matches) frame = requestAnimationFrame(draw)
     }
-
-    draw()
 
     return () => {
       gone = true

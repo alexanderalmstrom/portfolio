@@ -7,10 +7,15 @@ import { firstImage } from './blocks'
 import { PAGE_IMAGE } from './grid'
 import { preloadImage } from './image'
 
+// The sky of the not found page: its code and the maps it is drawn from.
+function prefetchSky() {
+  import('../components/Starfield').then(({ preloadMaps }) => preloadMaps())
+}
+
 // Gets what the page at a path needs to show its top ready ahead of going
 // there: its code, its content and the images it loads eagerly. Each page
 // decides for itself what those are, which this has to follow (see Home,
-// Project and Page).
+// Project and Page). A path that leads nowhere gets the not found page.
 export async function prefetchPage(pathname: string, queryClient: QueryClient) {
   const [, section, slug] = pathname.split('/')
 
@@ -30,6 +35,7 @@ export async function prefetchPage(pathname: string, queryClient: QueryClient) {
     const image = firstImage(entry?.fields.blocks)
 
     if (image) preloadImage(image)
+    if (!entry) prefetchSky()
   }
 
   if (section == 'page' && slug) {
@@ -39,5 +45,9 @@ export async function prefetchPage(pathname: string, queryClient: QueryClient) {
     const image = firstImage(entry.fields?.blocks)
 
     preloadImage(image ?? { image: entry.fields?.image, ...PAGE_IMAGE })
+  }
+
+  if (section && !(slug && (section == 'project' || section == 'page'))) {
+    prefetchSky()
   }
 }

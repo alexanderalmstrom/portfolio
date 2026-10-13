@@ -4,19 +4,25 @@ import {
   Suspense,
   useEffect,
   useLayoutEffect,
+  useRef,
   useState,
 } from 'react'
 import type { ReactNode } from 'react'
 
 import { cn } from '../lib/cn'
+import { holdCover } from '../lib/cover'
 
 import Container from './Container'
 import DocumentMeta from './DocumentMeta'
 
 // The sky is by far the largest part of the site and only this page shows
-// it, so it is loaded when the page is. It fades in, so nothing has to take
-// its place until then.
+// it, so it is loaded when the page is. The page stays covered until the
+// sky has been drawn.
 const Starfield = lazy(() => import('./Starfield'))
+
+// How long the page stays covered at most, in milliseconds, should the sky
+// never get there.
+const PATIENCE = 8000
 
 interface GlitchProps {
   children: ReactNode
@@ -261,11 +267,32 @@ export default function NotFound() {
     }
   }, [])
 
+  // Setting the sky up takes long enough to make anything that moves
+  // stutter, and it is not much to look at until its maps are there. So the
+  // cover between two pages is held until all of it has been drawn, and
+  // the page is uncovered with its sky in place.
+  const uncover = useRef<() => void>(undefined)
+
+  useLayoutEffect(() => {
+    const release = holdCover()
+    const timeout = setTimeout(release, PATIENCE)
+
+    uncover.current = release
+
+    return () => {
+      clearTimeout(timeout)
+      release()
+    }
+  }, [])
+
   return (
     <Container className="mt-10">
       <DocumentMeta title="Page not found" />
       <Suspense>
-        <Starfield className="pointer-events-none fixed inset-0 -z-1 size-full motion-safe:animate-dawn" />
+        <Starfield
+          className="pointer-events-none fixed inset-0 -z-1 size-full"
+          onReady={() => uncover.current?.()}
+        />
       </Suspense>
       {/* Everything but the heading is set in the typeface of the
           readouts. The heading grows with the width of the screen. */}
