@@ -19,7 +19,9 @@ function measureLines(element: HTMLElement) {
     part.setStart(node, start)
     part.setEnd(node, end)
 
-    const rects = part.getClientRects()
+    // Safari gives the text that starts a line within a word an empty box at
+    // the end of the line above as well, which would place it there.
+    const rects = [...part.getClientRects()].filter((rect) => rect.width > 0)
     const rect = rects[0] ?? part.getBoundingClientRect()
     const last = rects[rects.length - 1] ?? rect
 
