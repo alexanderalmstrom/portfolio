@@ -1,6 +1,11 @@
 import { useMemo } from 'react'
 
-import { useRiseLines } from '../hooks/useRiseLines'
+import {
+  HEADINGS,
+  SETTLE_REST,
+  TEXT,
+  useRiseLines,
+} from '../hooks/useRiseLines'
 import { cn } from '../lib/cn'
 import { columnClass } from '../lib/grid'
 import { markdown } from '../services/markdown'
@@ -8,18 +13,17 @@ import type { ColumnEntry } from '../types/contentful'
 
 interface ColumnProps {
   entry?: ColumnEntry
-  // The text rises line by line instead of settling as a whole.
+  // All of the text rises line by line. Without it only the headings do,
+  // and the rest settles.
   rise?: boolean
 }
-
-const TEXT = 'p, li, h1, h2, h3, h4, h5, h6, blockquote'
 
 export default function Column({ entry, rise = false }: ColumnProps) {
   const { content, size } = entry?.fields ?? {}
 
   // Kept between renders, so React leaves the split lines alone.
   const html = useMemo(() => markdown(content), [content])
-  const ref = useRiseLines<HTMLDivElement>(rise && TEXT)
+  const ref = useRiseLines<HTMLDivElement>(rise ? TEXT : HEADINGS)
 
   if (!html) return null
 
@@ -29,7 +33,7 @@ export default function Column({ entry, rise = false }: ColumnProps) {
       className={cn(
         columnClass(size),
         'px-8 text-foreground/60',
-        !rise && 'motion-safe:animate-settle',
+        !rise && SETTLE_REST,
       )}
       dangerouslySetInnerHTML={html}
     />

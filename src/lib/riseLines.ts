@@ -3,7 +3,7 @@ const STAGGER = 0.08
 
 // Lines past this one start along with it, so the end of a long text is not
 // kept waiting.
-const MAX_STAGGERED = 10
+const MAX_STAGGERED = 12
 
 // One range per rendered line of the text in an element, each from the start
 // of its first word to the end of its last.
