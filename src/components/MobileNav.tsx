@@ -64,32 +64,29 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
 
   return (
     <>
-      <div className="-mr-3.5 overflow-hidden sm:hidden">
+      <div className="overflow-hidden sm:hidden">
         <button
           ref={toggle}
-          className="group flex size-11 cursor-pointer items-center justify-center motion-safe:animate-rise"
+          className="flex h-11 cursor-pointer items-center text-foreground motion-safe:animate-rise"
           style={{ animationDelay: `${STAGGER * 2}s` }}
           type="button"
+          aria-label={open ? 'Close' : 'Menu'}
           aria-expanded={open}
           aria-controls={id}
           onClick={() => onOpenChange(!open)}>
-          {/* The outer part spins and the inner part flips over and changes
-              shape, so the two can run at the same time. The spin ends an
-              eighth of a turn off when the dialog is open, which leaves the
-              points of the star on the diagonals, as a cross. */}
-          <span
-            className={cn(
-              'block size-6 transition-[rotate] duration-1200 ease-spin motion-reduce:transition-none',
-              open ? 'rotate-585' : 'can-hover:group-hover:rotate-360',
-            )}>
+          {/* The two words are stacked behind a mask that is one line tall.
+              Opening moves them up, so "Menu" rises out and "Close" rises
+              in, and closing moves them back down. */}
+          <span className="block h-[1lh] overflow-hidden" aria-hidden="true">
             <span
               className={cn(
-                'block size-full bg-foreground transition-[clip-path,transform] duration-700 ease-spin motion-reduce:transition-none',
-                open ? 'rotate-x-180 clip-star' : 'clip-triangle',
-              )}
-            />
+                'flex flex-col items-end transition-[translate] duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none',
+                open && '-translate-y-1/2',
+              )}>
+              <span>Menu</span>
+              <span>Close</span>
+            </span>
           </span>
-          <span className="sr-only">Menu</span>
         </button>
       </div>
       <div
