@@ -10,23 +10,18 @@ export const cardVariants = tv({
     link: 'group relative block no-underline hover:text-inherit',
     media:
       'overflow-hidden bg-black [&_img]:h-full [&_img]:object-cover [&_img]:transition-[scale,opacity] [&_img]:duration-500 group-hover:[&_img]:scale-100 group-hover:[&_img]:opacity-100 can-hover:[&_img]:scale-103 can-hover:[&_img]:opacity-90 [&_picture]:h-full',
-    overlay: 'inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent',
+    overlay:
+      'inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-6 pt-28 xl:p-8 xl:pt-36',
     title: 'mb-0 text-white',
     label: 'block font-normal tracking-normal text-white/70',
   },
   variants: {
     // Half leaves room for the column gap of a two column grid from sm up
     // (see Home). Full is as wide as the viewport, up to the container's max
-    // width, and lines its title up with the header.
+    // width.
     width: {
-      half: {
-        root: 'sm:w-[calc(50%-1rem)] xl:w-[calc(50%-2rem)]',
-        overlay: 'p-4 pt-28 xl:p-6 xl:pt-36',
-      },
-      full: {
-        root: 'mx-auto max-w-400',
-        overlay: 'p-8 pt-28 sm:p-16 sm:pt-36',
-      },
+      half: { root: 'sm:w-[calc(50%-1rem)] xl:w-[calc(50%-2rem)]' },
+      full: { root: 'mx-auto max-w-400' },
     },
     // Every image is cropped to the same ratio, so the rows of a grid line
     // up. Portrait is 8:11, the ratio most images are uploaded in. Landscape
@@ -49,7 +44,7 @@ export const cardVariants = tv({
         label: 'mb-0.5 text-sm xl:text-base',
       },
       lg: {
-        title: 'text-3xl sm:text-5xl md:text-6xl xl:text-7xl',
+        title: 'text-2xl sm:text-4xl md:text-5xl xl:text-6xl',
         label: 'mb-0.5 text-sm sm:mb-2 sm:text-base xl:text-lg',
       },
     },
@@ -70,12 +65,14 @@ export const cardVariants = tv({
           'transition-[translate] duration-500 group-hover:translate-y-0 group-focus-visible:translate-y-0 can-hover:translate-y-3',
       },
     },
+    // The top padding that makes room for the gradient would push a centered
+    // title off center, so it matches the other sides.
     {
       hasImage: true,
       titlePosition: 'center',
       className: {
         overlay:
-          'sm:inset-0 sm:flex sm:items-center sm:justify-center sm:bg-black/25 sm:bg-none sm:p-16 sm:text-center',
+          'sm:inset-0 sm:flex sm:items-center sm:justify-center sm:bg-black/25 sm:bg-none sm:pt-6 sm:text-center xl:pt-8',
       },
     },
   ],
