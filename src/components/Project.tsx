@@ -2,12 +2,14 @@ import { useParams } from 'react-router-dom'
 
 import { useProjects, useSpace } from '../hooks/queries'
 import { firstImageBlock } from '../lib/blocks'
+import { cn } from '../lib/cn'
 
 import Container from './Container'
 import DocumentMeta from './DocumentMeta'
 import Loading from './Loading'
 import NotFound from './NotFound'
 import Block from './Block'
+import Card from './Card'
 
 export default function Project() {
   const { slug } = useParams()
@@ -16,15 +18,20 @@ export default function Project() {
 
   if (isPending) return <Loading />
 
-  const entry = projects.find((entry) => entry.fields.slug === slug)
+  const index = projects.findIndex((entry) => entry.fields.slug === slug)
+  const entry = projects[index]
 
   if (!entry) return <NotFound />
+
+  // Projects are ordered by date, and the last one links back to the first.
+  const next = projects[(index + 1) % projects.length]
+  const hasNext = next !== entry
 
   const { blocks } = entry.fields
   const eagerBlock = firstImageBlock(blocks)
 
   return (
-    <article className="sm:mb-10">
+    <article className={cn(!hasNext && 'sm:mb-10')}>
       <Container>
         <DocumentMeta
           title={`${entry.fields.name} - ${space?.name}`}
@@ -49,6 +56,26 @@ export default function Project() {
             : null}
         </section>
       </Container>
+      {/* Outside the container, so it is not held in by its side padding.
+          On small screens the negative margin cancels the bottom margin
+          of main (see Layout), so it ends the page. From sm up the bottom
+          margin, which that of main collapses into, is the space the last
+          block leaves above the card (see ContentBlock). */}
+      {hasNext ? (
+        <footer className="-mb-6 sm:mb-8 md:mt-16 md:mb-32">
+          <Card
+            key={next.sys.id}
+            to={`/project/${next.fields.slug}`}
+            title={next.fields.name}
+            label="Next project"
+            image={next.fields.image}
+            width="full"
+            aspect="landscape"
+            titlePosition="center"
+            size="lg"
+          />
+        </footer>
+      ) : null}
     </article>
   )
 }

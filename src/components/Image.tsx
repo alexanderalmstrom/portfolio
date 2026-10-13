@@ -27,7 +27,7 @@ export default function Image({ entry, loading }: ImageProps) {
   if (!image) return null
 
   return (
-    <div className={cn(columnClass(size), 'sm:mb-6 sm:px-8')}>
+    <div className={cn(columnClass(size), 'px-4 sm:px-8')}>
       <ImageContentful
         image={image}
         width={imageWidth(size)}

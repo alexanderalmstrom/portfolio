@@ -1,3 +1,4 @@
+import { cn } from '../lib/cn'
 import type {
   ColumnSkeleton,
   ContentBlockEntry,
@@ -19,17 +20,24 @@ export default function ContentBlock({ entry, loading }: ContentBlockProps) {
 
   const { columns } = entry.fields
 
-  // A block can stack several images, so only its first one loads eagerly.
-  const eagerColumn =
-    loading == 'eager'
-      ? (columns ?? []).findIndex(
-          (entry) => entry && isEntryOf<ImageSkeleton>(entry, 'image'),
-        )
-      : -1
+  const firstImage = (columns ?? []).findIndex(
+    (entry) => entry && isEntryOf<ImageSkeleton>(entry, 'image'),
+  )
 
+  // A block can stack several images, so only its first one loads eagerly.
+  const eagerColumn = loading == 'eager' ? firstImage : -1
+
+  const hasImage = firstImage != -1
+
+  // The margins of two blocks collapse into one, and the rows of images
+  // within a block are kept as far apart as that, so images are evenly
+  // spaced whether they share a block or not. On small screens they sit
+  // closer together than a block of text does to its neighbours.
   return (
-    <div className="my-8 md:my-16">
-      <Container nested>
+    <div className={cn('my-8 md:my-16', hasImage && 'my-4 sm:my-8')}>
+      <Container
+        nested
+        className={cn(hasImage && 'gap-y-4 sm:gap-y-8 md:gap-y-16')}>
         {columns
           ? columns.map((entry, index) => {
               if (!entry) return null
