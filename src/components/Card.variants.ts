@@ -57,6 +57,10 @@ export const cardVariants = tv({
       center: {},
     },
     size: {
+      sm: {
+        title: 'text-2xl md:text-3xl xl:text-4xl',
+        label: 'mb-0.5 text-sm xl:text-base',
+      },
       md: {
         title: 'text-2xl md:text-3xl xl:text-5xl',
         label: 'mb-0.5 text-sm xl:text-base',
