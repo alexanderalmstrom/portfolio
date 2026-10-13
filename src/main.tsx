@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Analytics } from '@vercel/analytics/react'
 
 import App from './components/App'
 import { EntryNotFoundError } from './services/entry'
@@ -26,6 +27,7 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('app')!).render(
   <QueryClientProvider client={queryClient}>
     <App />
+    <Analytics />
   </QueryClientProvider>,
 )
 
