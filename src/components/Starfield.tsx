@@ -517,8 +517,10 @@ const sky = `
     vec3 lights = vec3(0.0);
 
     if (reach > 0.98) {
+      // They are kept faint there, where all of them are seen at once from
+      // the side and would otherwise outshine the earth itself.
       lights = aurora(uGlobe * vec3(disc / reach, 0.0), turn.x, 2.4, 0.0)
-        * mix(1.0, 0.3, smoothstep(-0.12, 0.3, dot(vec3(disc / reach, 0.0), SUN))) * 0.8;
+        * mix(1.0, 0.3, smoothstep(-0.12, 0.3, dot(vec3(disc / reach, 0.0), SUN))) * 0.32;
     }
 
     if (reach >= 1.0) {
@@ -536,15 +538,16 @@ const sky = `
       vec2 ring = vec2(cos(compass), sin(compass));
       float drape = 0.6 * noise(ring * 7.0 + uSeconds * 0.04)
         + 0.4 * noise(ring * 15.0 - uSeconds * 0.05);
-      float tall = 0.014 + 0.03 * smoothstep(0.15, 0.9, drape);
+      // It stands low over the edge, and its hem is nearly even.
+      float tall = 0.01 + 0.008 * smoothstep(0.1, 0.9, drape);
       float above = (reach - 1.0) / tall;
       // The folds lean one way and the other the higher up they are, the
       // way cloth moves that hangs from one side.
       float sway = compass + 0.012 * above * sin(compass * 9.0 + uSeconds * 0.35);
       vec2 hung = vec2(cos(sway), sin(sway));
-      float folds = 0.6 * noise(hung * 30.0 + uSeconds * 0.06)
-        + 0.4 * noise(hung * 62.0 - uSeconds * 0.09);
-      float sheen = 0.5 + 0.75 * smoothstep(0.25, 0.75, folds);
+      float folds = 0.6 * noise(hung * 14.0 + uSeconds * 0.06)
+        + 0.4 * noise(hung * 30.0 - uSeconds * 0.09);
+      float sheen = 0.85 + 0.25 * smoothstep(0.15, 0.85, folds);
 
       lights = mix(lights, vec3(0.6, 0.15, 0.85) * lights.g * 0.6, smoothstep(0.4, 1.8, above))
         * exp(-pow(above, 1.4)) * mix(1.0, sheen, smoothstep(0.0, 0.5, above));
@@ -618,14 +621,15 @@ const sky = `
     colour = mix(colour, AIR * haze, haze * (0.1 + 0.75 * pow(1.0 - normal.z, 2.5)));
 
     // The northern lights hang above the clouds and the air. They are
-    // bright in the dark and pale by day, and brighter towards the edge of
-    // the earth, where they are seen from the side.
+    // bright in the dark and pale by day. Towards the edge of the earth,
+    // where they are seen from the side and pile up, they are dimmed to
+    // what shows past it.
     colour += aurora(
       place,
       turn.x,
       1.0 / pow(max(normal.z, 0.23), 0.6),
       smoothstep(0.2, 0.55, normal.z)
-    ) * mix(1.0, 0.3, day) * 0.8;
+    ) * mix(1.0, 0.3, day) * 0.8 * mix(0.4, 1.0, smoothstep(0.1, 0.6, normal.z));
 
     // The last few pixels of the ground blend into what is right over the
     // edge, the glow of the air and the northern lights there, so that the
