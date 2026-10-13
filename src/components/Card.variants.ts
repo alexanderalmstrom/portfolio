@@ -58,7 +58,7 @@ export const cardVariants = tv({
     },
     size: {
       md: {
-        title: 'text-xl md:text-2xl xl:text-3xl',
+        title: 'text-2xl md:text-3xl xl:text-5xl',
         label: 'mb-0.5 text-sm xl:text-base',
       },
       lg: {
