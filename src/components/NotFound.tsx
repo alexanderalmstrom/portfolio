@@ -24,6 +24,11 @@ const Starfield = lazy(() => import('./Starfield'))
 // never get there.
 const PATIENCE = 8000
 
+// How far the text goes of the way the earth gives to the pointer. It goes
+// the same way and a little further, as it is in front of the earth, the
+// way the moon behind it goes less far.
+const NEAR = 1.4
+
 interface GlitchProps {
   children: ReactNode
 }
@@ -285,6 +290,8 @@ export default function NotFound() {
     }
   }, [])
 
+  const text = useRef<HTMLDivElement>(null)
+
   return (
     <Container className="mt-10">
       <DocumentMeta title="Page not found" />
@@ -292,28 +299,41 @@ export default function NotFound() {
         <Starfield
           className="pointer-events-none fixed inset-0 -z-1 size-full"
           onReady={() => uncover.current?.()}
+          onSway={(right, down) => {
+            if (!text.current) return
+
+            text.current.style.translate = `${right * NEAR}px ${down * NEAR}px`
+          }}
         />
       </Suspense>
-      {/* Everything but the heading is set in the typeface of the
-          readouts. The heading grows with the width of the screen. */}
-      <div className="w-full flex-none px-8 font-mono text-[0.8125rem] lg:px-16">
-        <Telemetry />
-        <h1 className="mb-6 font-sans text-[clamp(2.25rem,6vw,8rem)] leading-[1.05]">
-          <Glitch>
-            <Heading />
-          </Glitch>
-        </h1>
-        <p className="motion-safe:animate-glitch-flicker motion-safe:[animation-delay:-1.7s] lg:text-lg">
-          {/* Rises in after the heading, through a mask of its own; the
+      {/* The text is moved out of its place as the pointer moves (see
+          Starfield), which would make the page scroll, sideways on a narrow
+          screen. So it is cut off at the edges of the page, and at a
+          distance above and below itself that it never gets to. */}
+      <div className="-my-16 w-full flex-none overflow-clip py-16">
+        {/* Everything but the heading is set in the typeface of the
+            readouts. The heading grows with the width of the screen. */}
+        <div
+          ref={text}
+          className="px-8 font-mono text-[0.8125rem] will-change-transform lg:px-16">
+          <Telemetry />
+          <h1 className="mb-6 font-sans text-[clamp(2.25rem,6vw,8rem)] leading-[1.05]">
+            <Glitch>
+              <Heading />
+            </Glitch>
+          </h1>
+          <p className="motion-safe:animate-glitch-flicker motion-safe:[animation-delay:-1.7s] lg:text-lg">
+            {/* Rises in after the heading, through a mask of its own; the
               padding keeps descenders from being cut. */}
-          <span className="mb-[-0.15em] block overflow-hidden pb-[0.15em]">
-            <span
-              className="block motion-safe:animate-rise"
-              style={{ animationDelay: `${(lines.length + 1) * STAGGER}s` }}>
-              We could not find what you were looking for.
+            <span className="mb-[-0.15em] block overflow-hidden pb-[0.15em]">
+              <span
+                className="block motion-safe:animate-rise"
+                style={{ animationDelay: `${(lines.length + 1) * STAGGER}s` }}>
+                We could not find what you were looking for.
+              </span>
             </span>
-          </span>
-        </p>
+          </p>
+        </div>
       </div>
     </Container>
   )

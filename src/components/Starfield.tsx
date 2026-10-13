@@ -13,6 +13,9 @@ interface StarfieldProps {
   // Called when the sky has been drawn in full for the first time, or when
   // it turns out that it never will be.
   onReady?: () => void
+  // Called as the earth gives way to the pointer, with how far it is out
+  // of its place by then: to the right and down, in pixels of the page.
+  onSway?: (right: number, down: number) => void
 }
 
 // The maps, by the name the shader knows each by.
@@ -83,6 +86,14 @@ const REST = 80
 // The fastest the earth can be thrown, in radians per second: a little
 // over one turn a second.
 const FASTEST = 7
+
+// How far the earth moves out of its place as the pointer goes from the
+// middle of the screen to an edge of it, measured in the short side of the
+// screen, and how much of that the moon does, which is much further away.
+// And how quickly they follow the pointer; higher is sooner.
+const SWAY = 0.025
+const FAR = 0.3
+const FOLLOW = 3
 
 function limit(spin: number) {
   return Math.max(-FASTEST, Math.min(FASTEST, spin))
@@ -189,6 +200,7 @@ const sky = `
   uniform sampler2D uMoon;
   uniform mat3 uGlobe;
   uniform float uHeld;
+  uniform vec2 uSway;
 
   ${exposure}
 
@@ -781,7 +793,10 @@ const sky = `
     // top of it to the right, and then out of sight behind it.
     float orbit = -uSeconds / 3600.0 * 6.2831853;
     vec2 away = vec2(edge.x * -0.05, -edge.y + 0.52) - home;
-    vec2 around = home + mat2(cos(orbit), sin(orbit), -sin(orbit), cos(orbit)) * away;
+    // Both give way a little to the pointer, the moon less than the earth
+    // as it is further off, which sets the two apart in depth.
+    vec2 around = home + mat2(cos(orbit), sin(orbit), -sin(orbit), cos(orbit)) * away
+      + uSway * ${FAR};
 
     // The moon is lit from where the sun is past the screen, which is a
     // little nearer the camera than the moon is, so that slightly more
@@ -795,7 +810,7 @@ const sky = `
       normalize(vec3(normalize(seat - around), 0.12)),
       normalize(vec3(normalize(home - around) * 0.6, 0.8))
     );
-    vec4 globe = earth(point, home, ${EARTH.radius});
+    vec4 globe = earth(point, home + uSway, ${EARTH.radius});
 
     // Both hide the stars behind them.
     gl_FragColor = rock + gl_FragColor * (1.0 - rock.a);
@@ -899,13 +914,19 @@ function link(gl: WebGLRenderingContext, vertex: string, fragment: string) {
 // The night sky behind the not found page, drawn with WebGL: a field of
 // stars the camera drifts through, and the far sky, the earth and the moon
 // as one shader over the whole screen. Without WebGL the canvas simply stays empty.
-export default function Starfield({ className, onReady }: StarfieldProps) {
+export default function Starfield({
+  className,
+  onReady,
+  onSway,
+}: StarfieldProps) {
   const ref = useRef<HTMLCanvasElement>(null)
   const ready = useRef(onReady)
+  const swayed = useRef(onSway)
 
   useEffect(() => {
     ready.current = onReady
-  }, [onReady])
+    swayed.current = onSway
+  }, [onReady, onSway])
   // A canvas only ever has the one context, and a context that is lost
   // stays lost. So when that happens the canvas is replaced by a new one,
   // which this counts, and the sky is set up again on that.
@@ -1039,6 +1060,11 @@ export default function Starfield({ className, onReady }: StarfieldProps) {
       spin: { right: number; down: number }
     } = { orientation: globe(), spin: { right: 0, down: 0 } }
     let held: { x: number; y: number; at: number } | null = null
+    // The earth leans away from the pointer: where that takes it, and where
+    // it is on its way there, both as the shader measures, to the right and
+    // up in the short side of the screen.
+    let lean = { x: 0, y: 0 }
+    const sway = { x: 0, y: 0 }
     let drawn = start
     // The seconds the sky has been moving for, which is what it goes by:
     // not the time since it was set up, as it stands still now and then.
@@ -1066,8 +1092,10 @@ export default function Starfield({ className, onReady }: StarfieldProps) {
 
       return (
         Math.hypot(
-          place.clientX - width * (0.5 + aside(width, height) * 0.5),
-          place.clientY - height - EARTH.below * side(),
+          place.clientX -
+            width * (0.5 + aside(width, height) * 0.5) -
+            sway.x * side(),
+          place.clientY - height - (EARTH.below - sway.y) * side(),
         ) < radius()
       )
     }
@@ -1131,8 +1159,23 @@ export default function Starfield({ className, onReady }: StarfieldProps) {
     function drag(event: PointerEvent) {
       if (event.pointerType == 'touch') return
 
-      if (held) turnTo(event, event.timeStamp)
-      else document.documentElement.style.cursor = over(event) ? 'grab' : ''
+      if (held) return turnTo(event, event.timeStamp)
+
+      // The earth stays where it is while it is held, and in a sky that
+      // holds still.
+      if (!still.matches) {
+        lean = {
+          x: (0.5 - event.clientX / canvas!.clientWidth) * 2 * SWAY,
+          y: (event.clientY / canvas!.clientHeight - 0.5) * 2 * SWAY,
+        }
+      }
+
+      document.documentElement.style.cursor = over(event) ? 'grab' : ''
+    }
+
+    // With the pointer off the page the earth goes back to its place.
+    function level() {
+      lean = { x: 0, y: 0 }
     }
 
     function release(event: PointerEvent) {
@@ -1168,6 +1211,7 @@ export default function Starfield({ className, onReady }: StarfieldProps) {
     window.addEventListener('pointermove', drag)
     window.addEventListener('pointerup', release)
     window.addEventListener('pointercancel', release)
+    document.documentElement.addEventListener('pointerleave', level)
     window.addEventListener('touchstart', touch, { passive: true })
     window.addEventListener('touchmove', swipe, { passive: false })
     window.addEventListener('touchend', lift)
@@ -1263,6 +1307,15 @@ export default function Starfield({ className, onReady }: StarfieldProps) {
       drawn = now
       clock += elapsed
 
+      const nearer = 1 - Math.exp(-FOLLOW * elapsed)
+
+      // Once it is as good as there, nobody is told about it any more.
+      if (Math.hypot(lean.x - sway.x, lean.y - sway.y) * side() > 0.05) {
+        sway.x += (lean.x - sway.x) * nearer
+        sway.y += (lean.y - sway.y) * nearer
+        swayed.current?.(sway.x * side(), -sway.y * side())
+      }
+
       const { right, down } = earth.spin
 
       if (!held && Math.abs(right) + Math.abs(down) >= 0.0005) {
@@ -1310,6 +1363,11 @@ export default function Starfield({ className, onReady }: StarfieldProps) {
         width,
         height,
       )
+      gl!.uniform2f(
+        gl!.getUniformLocation(skyProgram!, 'uSway'),
+        sway.x,
+        sway.y,
+      )
       gl!.uniformMatrix3fv(
         gl!.getUniformLocation(skyProgram!, 'uGlobe'),
         false,
@@ -1325,6 +1383,7 @@ export default function Starfield({ className, onReady }: StarfieldProps) {
       window.removeEventListener('pointermove', drag)
       window.removeEventListener('pointerup', release)
       window.removeEventListener('pointercancel', release)
+      document.documentElement.removeEventListener('pointerleave', level)
       window.removeEventListener('touchstart', touch)
       window.removeEventListener('touchmove', swipe)
       window.removeEventListener('touchend', lift)
