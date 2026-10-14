@@ -43,7 +43,9 @@ function Title({ children }: { children: string }) {
   )
 }
 
-// The cards of the previous and the next project, which end the page.
+// The cards of the previous and the next project, which end the page. The
+// space above them is as much as the footer of the site leaves below them
+// (see Footer), and the last block above adds nothing to it (see below).
 //
 // The cards run from edge to edge on small screens. There the next project
 // takes nearly all of the width and the previous one shows its edge to the
@@ -61,7 +63,7 @@ function Title({ children }: { children: string }) {
 // and gets the whole width.
 function Links({ children }: { children: ReactNode }) {
   return (
-    <footer className="mx-auto max-w-400 sm:pr-16 sm:pb-8 sm:pl-38 md:pb-32">
+    <footer className="mx-auto max-w-400 pt-10 sm:pr-16 sm:pl-38">
       {children}
     </footer>
   )
@@ -139,34 +141,32 @@ export default function Project() {
     <article
       key={entry.sys.id}
       className={cn('overflow-x-clip', hasNext ? '-mb-6' : 'sm:mb-10')}>
-      {/* From md up the padding is the space the last block leaves above
-          the cards below (see ContentBlock). */}
-      <div className={cn(hasNext && 'md:pb-16')}>
-        <Container>
-          <DocumentMeta
-            title={`${entry.fields.name} - ${space?.name}`}
-            description={entry.fields.description}
-          />
-          <Title>{entry.fields.name}</Title>
-          <section className="w-full flex-none">
-            {blocks
-              ? blocks.map((entry, index) => {
-                  // The first images are near the top of the page, so they
-                  // should not wait for lazy loading.
-                  return (
-                    <Block
-                      key={index}
-                      entry={entry}
-                      loading={index == eagerBlock ? 'eager' : 'lazy'}
-                      rise
-                      slide
-                    />
-                  )
-                })
-              : null}
-          </section>
-        </Container>
-      </div>
+      <Container>
+        <DocumentMeta
+          title={`${entry.fields.name} - ${space?.name}`}
+          description={entry.fields.description}
+        />
+        <Title>{entry.fields.name}</Title>
+        {/* The last block gives up its bottom margin when cards follow,
+              which keep their own distance to it (see Links). */}
+        <section className={cn('w-full flex-none', hasNext && '*:last:mb-0')}>
+          {blocks
+            ? blocks.map((entry, index) => {
+                // The first images are near the top of the page, so they
+                // should not wait for lazy loading.
+                return (
+                  <Block
+                    key={index}
+                    entry={entry}
+                    loading={index == eagerBlock ? 'eager' : 'lazy'}
+                    rise
+                    slide
+                  />
+                )
+              })
+            : null}
+        </section>
+      </Container>
       {hasNext ? (
         <Links>
           <div
