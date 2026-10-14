@@ -47,7 +47,8 @@ function Line({
 // stacked. The side padding is that of the text of a page (see Column), and
 // with that of the container it keeps the footer clear of the site title
 // from sm up and in line with the navigation on the right. All of it is set
-// in the grey of the body text except the name.
+// in the grey of the body text except the name. The space above it is
+// what the cards that end a project keep above themselves (see Project).
 //
 // The footer stays at the bottom of the screen, behind the page, which
 // uncovers it as its end is scrolled away (see Layout). The lines rise one
@@ -78,7 +79,7 @@ export default function Footer({ inert = false }: FooterProps) {
       <div ref={end} />
       <footer className="sticky bottom-0 peer-has-data-sky:z-2" inert={inert}>
         <Container>
-          <address className="flex w-full flex-wrap justify-between gap-x-16 gap-y-6 px-8 pt-10 pb-10 text-foreground/60 not-italic sm:pt-16 sm:pb-12">
+          <address className="flex w-full flex-wrap justify-between gap-x-16 gap-y-6 px-8 py-10 text-foreground/60 not-italic sm:pb-12">
             <div>
               <Line index={0} risen={uncovered}>
                 <strong>{space?.name}</strong>
