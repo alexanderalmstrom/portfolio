@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import { useSpace } from '../hooks/queries'
+import { ROLE } from '../lib/contact'
 
 import Logo from '../images/logo.svg?react'
 
@@ -28,7 +29,7 @@ export default function Header({ menuOpen, onMenuOpenChange }: HeaderProps) {
           <span
             className="block motion-safe:animate-rise"
             style={{ animationDelay: `${STAGGER}s` }}>
-            Senior Frontend Engineer / Designer
+            {ROLE}
           </span>
         </span>
       </div>

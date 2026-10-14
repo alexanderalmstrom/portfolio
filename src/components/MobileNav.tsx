@@ -2,21 +2,11 @@ import { useEffect, useId, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 import { cn } from '../lib/cn'
+import { CONTACT, ROLE } from '../lib/contact'
 
 import Grain from './Grain'
 
 const LINKS = [{ to: '/page/about', label: 'About' }]
-
-// What the dialog says at its bottom about who to get in touch with: the
-// title first, then the ways to do it.
-const TITLE = 'Senior Frontend Engineer / Designer'
-const CONTACT = [
-  {
-    href: 'mailto:info@alexanderalmstrom.com',
-    label: 'info@alexanderalmstrom.com',
-  },
-  { href: 'tel:+46763395288', label: '+46 76 339 52 88' },
-]
 
 // Seconds between the links starting to rise in when the dialog opens, and
 // how long the first one waits for the dialog to fade in.
@@ -130,11 +120,12 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
             ))}
           </ul>
         </nav>
-        {/* Set in the grey of the body text (see Column), and rising in
+        {/* Who to get in touch with: the role first, then the ways to do
+            it. Set in the grey of the body text (see Column), and rising in
             line by line after the links. */}
         <address className="absolute inset-x-12 bottom-10 text-foreground/60 not-italic">
           {[
-            TITLE,
+            ROLE,
             ...CONTACT.map(({ href, label }) => (
               <a
                 className="text-inherit no-underline hover:underline"

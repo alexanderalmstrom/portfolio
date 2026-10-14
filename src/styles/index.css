@@ -373,9 +373,12 @@
   }
 
   /* While the cover between two pages is up, the page behind it holds its
-     animations at their start. They run once the cover has left (see
-     PageTransition). */
-  :root[data-covered] main * {
+     animations at their start, and so does the footer below it. They run
+     once the cover has left (see PageTransition). The footer does the same
+     while the page above it is loading (see Loading), when there is nothing
+     there to cover it yet. */
+  :root[data-covered] :is(main, main ~ footer) *,
+  main:has([data-loading]) ~ footer * {
     animation-play-state: paused !important;
   }
 

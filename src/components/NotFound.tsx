@@ -309,8 +309,10 @@ export default function NotFound() {
       {/* The text is moved out of its place as the pointer moves (see
           Starfield), which would make the page scroll, sideways on a narrow
           screen. So it is cut off at the edges of the page, and at a
-          distance above and below itself that it never gets to. */}
-      <div className="-my-16 w-full flex-none overflow-clip py-16">
+          distance above and below itself that it never gets to. The
+          attribute tells the layout that the page has a sky behind it,
+          which fills the screen (see Layout). */}
+      <div className="-my-16 w-full flex-none overflow-clip py-16" data-sky="">
         {/* Everything but the heading is set in the typeface of the
             readouts. The heading grows with the width of the screen. */}
         <div
