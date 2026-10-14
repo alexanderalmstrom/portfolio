@@ -14,6 +14,7 @@ import Loading from './Loading'
 import NotFound from './NotFound'
 import Block from './Block'
 import Card from './Card'
+import { CARD_IMAGE } from './Card.variants'
 
 // Seconds between each word starting to rise.
 const STAGGER = 0.08
@@ -51,10 +52,10 @@ function Title({ children }: { children: string }) {
 // rest of the way once they are uncovered.
 //
 // The cards run from edge to edge on small screens. There the next project
-// takes most of the width and the previous one shows its edge to the left
-// of it, in a row that scrolls sideways. The row is reversed, which makes
-// it start out scrolled to its right end, and the order of the previous
-// project puts it back on the left.
+// takes nearly all of the width and the previous one shows its edge to the
+// left of it, in a row that scrolls sideways. The row is reversed, which
+// makes it start out scrolled to its right end, and the order of the
+// previous project puts it back on the left.
 //
 // From sm up the two share the width of a row that is as tall as two
 // portrait cards side by side are, and the one that is hovered takes some
@@ -97,17 +98,23 @@ export default function Project() {
 
   // With only two projects the previous one is the next one as well. The
   // classes of the root are for the row the two scroll in on small screens
-  // (see below). Those of the media hold each image to the outer edge of
-  // its card from sm up, so it stays in place as the card grows.
+  // (see below), where the next project is the wider of the two, which its
+  // sizes follow. That makes it the taller one as well, so the previous
+  // project fills the height of the row instead of keeping its own ratio.
+  // Those of the media hold each image to the outer edge of its card from
+  // sm up, so it stays in place as the card grows.
+  const isPair = hasNext && previous !== next
   const links = [
-    ...(previous !== next
+    ...(isPair
       ? [
           {
             entry: previous,
             label: 'Previous project',
+            sizes: undefined,
             classNames: {
               root: 'max-sm:order-1 max-sm:snap-start',
-              media: 'sm:[&_picture]:left-0',
+              link: 'max-sm:h-full',
+              media: 'max-sm:aspect-auto max-sm:h-full sm:[&_picture]:left-0',
             },
           },
         ]
@@ -117,15 +124,18 @@ export default function Project() {
           {
             entry: next,
             label: 'Next project',
+            sizes: isPair
+              ? CARD_IMAGE.pair.sizes.replace(/80vw$/, '92vw')
+              : undefined,
             classNames: {
-              root: 'max-sm:snap-end',
+              root: cn('max-sm:snap-end', isPair && 'max-sm:w-[92%]'),
+              link: undefined,
               media: 'sm:[&_picture]:right-0',
             },
           },
         ]
       : []),
   ]
-  const isPair = links.length > 1
 
   const { blocks } = entry.fields
   const eagerBlock = firstImageBlock(blocks)
@@ -182,7 +192,7 @@ export default function Project() {
               'flex max-sm:snap-x max-sm:snap-mandatory max-sm:[scrollbar-width:none] max-sm:flex-row-reverse max-sm:overflow-x-auto max-sm:overscroll-x-contain',
               isPair && 'sm:aspect-16/11',
             )}>
-            {links.map(({ entry, label, classNames }) => (
+            {links.map(({ entry, label, sizes, classNames }) => (
               <Card
                 key={label}
                 to={`/project/${entry.fields.slug}`}
@@ -193,6 +203,7 @@ export default function Project() {
                 aspect={isPair ? 'portrait' : 'landscape'}
                 titlePosition="center"
                 size={isPair ? 'md' : 'lg'}
+                sizes={sizes}
                 classNames={classNames}
               />
             ))}
