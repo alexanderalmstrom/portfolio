@@ -1,3 +1,5 @@
+import { cn } from '../lib/cn'
+
 // Film grain on the background of the site: a tile of noise repeated over
 // the screen, which jitters a step at a time (see the styles). Only the
 // movement is an animation, so the grain stays with reduced motion.
@@ -10,10 +12,13 @@
 //
 // It reaches past the screen by as far as it is moved, so an edge of it
 // never shows.
-export default function Grain() {
+export default function Grain({ className }: { className?: string }) {
   return (
     <div
-      className="pointer-events-none fixed -inset-12 -z-1 bg-[url(/images/grain.png)] opacity-[0.075] motion-safe:animate-grain motion-safe:will-change-transform"
+      className={cn(
+        'pointer-events-none fixed -inset-12 -z-1 bg-[url(/images/grain.png)] opacity-[0.075] motion-safe:animate-grain motion-safe:will-change-transform',
+        className,
+      )}
       aria-hidden="true"
     />
   )
