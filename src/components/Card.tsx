@@ -21,6 +21,9 @@ interface CardProps extends CardVariantProps {
   label?: ReactNode
   image?: ImageAsset
   loading?: 'lazy' | 'eager'
+  // How wide the image is displayed, when that is not what the width of the
+  // card says it is (see CARD_IMAGE).
+  sizes?: string
   // The card also moves up into place as it fades in.
   rise?: boolean
   // Extra classes for any slot, merged after those of the variants.
@@ -34,6 +37,7 @@ export default function Card({
   label,
   image,
   loading,
+  sizes,
   rise,
   classNames,
   width = 'half',
@@ -63,7 +67,7 @@ export default function Card({
             <ImageContentful
               image={image}
               width={CARD_IMAGE[width].width}
-              sizes={CARD_IMAGE[width].sizes}
+              sizes={sizes ?? CARD_IMAGE[width].sizes}
               loading={loading}
               onLoad={handleLoaded}
             />
