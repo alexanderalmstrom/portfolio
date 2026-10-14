@@ -24,9 +24,9 @@ const Starfield = lazy(() => import('./Starfield'))
 // never get there.
 const PATIENCE = 8000
 
-// How far the text goes of the way the earth gives to the pointer. It goes
-// the same way and a little further, as it is in front of the earth, the
-// way the moon behind it goes less far.
+// How far the text goes of the way the earth gives to the pointer, or to
+// the tilt of a phone. It goes the same way and a little further, as it is
+// in front of the earth, the way the moon behind it goes less far.
 const NEAR = 1.4
 
 interface GlitchProps {
@@ -306,8 +306,8 @@ export default function NotFound() {
           }}
         />
       </Suspense>
-      {/* The text is moved out of its place as the pointer moves (see
-          Starfield), which would make the page scroll, sideways on a narrow
+      {/* The text is moved out of its place as the pointer moves, or as a
+          phone is tilted (see Starfield), which would make the page scroll, sideways on a narrow
           screen. So it is cut off at the edges of the page, and at a
           distance above and below itself that it never gets to. The
           attribute tells the layout that the page has a sky behind it,
