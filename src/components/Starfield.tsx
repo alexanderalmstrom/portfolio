@@ -13,8 +13,9 @@ interface StarfieldProps {
   // Called when the sky has been drawn in full for the first time, or when
   // it turns out that it never will be.
   onReady?: () => void
-  // Called as the earth gives way to the pointer, with how far it is out
-  // of its place by then: to the right and down, in pixels of the page.
+  // Called as the earth gives way to the pointer, or to the tilt of a
+  // phone, with how far it is out of its place by then: to the right and
+  // down, in pixels of the page.
   onSway?: (right: number, down: number) => void
 }
 
@@ -94,6 +95,20 @@ const FASTEST = 7
 const SWAY = 0.025
 const FAR = 0.3
 const FOLLOW = 3
+
+// A phone has no pointer, so there the earth gives way as the phone is
+// tilted instead: how far, measured like the sway above, and by how many
+// degrees the phone has to be tilted for all of it. The way the phone is
+// held is what counts as level, which follows the way it is held now over
+// about this many seconds, so the earth goes back to its place in a phone
+// that is kept tilted.
+const TILT = { sway: 0.05, degrees: 15, settle: 4 }
+
+// Safari on a phone only tells how it is tilted once it has been allowed
+// to, which it has to be asked for.
+interface TiltPermission {
+  requestPermission?: () => Promise<'granted' | 'denied'>
+}
 
 function limit(spin: number) {
   return Math.max(-FASTEST, Math.min(FASTEST, spin))
@@ -1065,6 +1080,8 @@ export default function Starfield({
     // up in the short side of the screen.
     let lean = { x: 0, y: 0 }
     const sway = { x: 0, y: 0 }
+    // How the phone was held, in degrees to the right and down, and when.
+    let level: { right: number; down: number; at: number } | null = null
     let drawn = start
     // The seconds the sky has been moving for, which is what it goes by:
     // not the time since it was set up, as it stands still now and then.
@@ -1174,7 +1191,7 @@ export default function Starfield({
     }
 
     // With the pointer off the page the earth goes back to its place.
-    function level() {
+    function leave() {
       lean = { x: 0, y: 0 }
     }
 
@@ -1207,11 +1224,67 @@ export default function Starfield({
       letGo(event.timeStamp)
     }
 
+    // A screen without a pointer to hover with leans the earth by being
+    // tilted. Seen from the side the phone is tilted away from, what is in
+    // front of the screen is further over to the other side, so everything
+    // goes the way the phone is tilted: the text the furthest and the moon
+    // the least. The angles are those of the phone, which a screen that is
+    // turned on its side has turned with it.
+    const tiltable = window.matchMedia('(hover: none)')
+
+    function tilt(event: DeviceOrientationEvent) {
+      if (event.beta == null || event.gamma == null) return
+      if (!tiltable.matches || still.matches) return
+
+      const turn = ((screen.orientation?.angle ?? 0) * Math.PI) / 180
+      const right = event.gamma * Math.cos(turn) + event.beta * Math.sin(turn)
+      const down = event.beta * Math.cos(turn) - event.gamma * Math.sin(turn)
+      const at = event.timeStamp
+      const from = level ?? { right, down, at }
+      const settled = 1 - Math.exp(-(at - from.at) / 1000 / TILT.settle)
+
+      level = {
+        right: from.right + (right - from.right) * settled,
+        down: from.down + (down - from.down) * settled,
+        at,
+      }
+
+      const part = (degrees: number) =>
+        Math.max(-1, Math.min(1, degrees / TILT.degrees)) * TILT.sway
+
+      // The earth stays where it is while it is held.
+      if (!held) {
+        lean = { x: part(right - level.right), y: -part(down - level.down) }
+      }
+    }
+
+    // Safari only lets itself be asked from a tap, so the first one on the
+    // page that is not on a link asks. A touch that scrolled the page is
+    // not one, and is turned down without the visitor being asked, so the
+    // asking goes on until there is an answer.
+    const permission = (
+      'DeviceOrientationEvent' in window ? DeviceOrientationEvent : {}
+    ) as TiltPermission
+
+    function ask(event: TouchEvent) {
+      if (event.target instanceof Element && event.target.closest('a, button'))
+        return
+
+      permission
+        .requestPermission?.()
+        .then(() => window.removeEventListener('touchend', ask))
+        .catch(() => {})
+    }
+
+    window.addEventListener('deviceorientation', tilt)
+    if (permission.requestPermission) {
+      window.addEventListener('touchend', ask)
+    }
     window.addEventListener('pointerdown', grab)
     window.addEventListener('pointermove', drag)
     window.addEventListener('pointerup', release)
     window.addEventListener('pointercancel', release)
-    document.documentElement.addEventListener('pointerleave', level)
+    document.documentElement.addEventListener('pointerleave', leave)
     window.addEventListener('touchstart', touch, { passive: true })
     window.addEventListener('touchmove', swipe, { passive: false })
     window.addEventListener('touchend', lift)
@@ -1379,11 +1452,13 @@ export default function Starfield({
     return () => {
       gone = true
       cancelAnimationFrame(frame)
+      window.removeEventListener('deviceorientation', tilt)
+      window.removeEventListener('touchend', ask)
       window.removeEventListener('pointerdown', grab)
       window.removeEventListener('pointermove', drag)
       window.removeEventListener('pointerup', release)
       window.removeEventListener('pointercancel', release)
-      document.documentElement.removeEventListener('pointerleave', level)
+      document.documentElement.removeEventListener('pointerleave', leave)
       window.removeEventListener('touchstart', touch)
       window.removeEventListener('touchmove', swipe)
       window.removeEventListener('touchend', lift)
