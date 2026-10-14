@@ -8,8 +8,9 @@ import Grain from './Grain'
 
 const LINKS = [{ to: '/page/about', label: 'About' }]
 
-// Seconds between the links starting to rise in when the dialog opens, and
-// how long the first one waits for the dialog to fade in.
+// Seconds between the links starting to slide in from the left when the
+// dialog opens and the lines below them starting to rise, and how long the
+// first one waits for the dialog to fade in.
 const STAGGER = 0.08
 const DELAY = 0.1
 
@@ -95,7 +96,7 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
       <div
         id={id}
         className={cn(
-          'fixed inset-0 -z-1 flex touch-none items-center overscroll-none bg-background px-12 transition-[opacity,visibility] duration-300 sm:hidden',
+          'fixed inset-0 -z-1 flex touch-none flex-col justify-end overscroll-none bg-background px-12 pb-10 transition-[opacity,visibility] duration-300 sm:hidden',
           !open && 'invisible opacity-0',
         )}
         role="dialog"
@@ -106,11 +107,11 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
         <nav>
           <ul className="mb-0">
             {LINKS.map(({ to, label }, index) => (
-              <li key={to} className="mb-2 overflow-hidden pb-1">
+              <li key={to} className="mb-2 pb-1">
                 <Link
                   className={cn(
                     'block text-[2.5rem] leading-[1.1] font-medium tracking-[-0.02em] no-underline',
-                    open && 'motion-safe:animate-rise',
+                    open && 'motion-safe:animate-slide-left',
                   )}
                   style={{ animationDelay: `${DELAY + STAGGER * index}s` }}
                   to={to}>
@@ -122,8 +123,9 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
         </nav>
         {/* Who to get in touch with: the role first, then the ways to do
             it. Set in the grey of the body text (see Column), and rising in
-            line by line after the links. */}
-        <address className="absolute inset-x-12 bottom-10 text-foreground/60 not-italic">
+            line by line after the links, which sit above it at the bottom
+            of the dialog with a line between the two. */}
+        <address className="mt-2 border-t border-muted pt-4 text-foreground/60 not-italic">
           {[
             ROLE,
             ...CONTACT.map(({ href, label }) => (
