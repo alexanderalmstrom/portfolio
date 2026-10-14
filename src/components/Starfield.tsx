@@ -17,6 +17,9 @@ interface StarfieldProps {
   // phone, with how far it is out of its place by then: to the right and
   // down, in pixels of the page.
   onSway?: (right: number, down: number) => void
+  // Whether the earth gives way to the tilt of a phone, which the visitor
+  // can turn off (see NotFound).
+  tilts?: boolean
 }
 
 // The maps, by the name the shader knows each by.
@@ -114,12 +117,6 @@ function storm(index: number) {
 // about this many seconds, so the earth goes back to its place in a phone
 // that is kept tilted.
 const TILT = { sway: 0.05, degrees: 15, settle: 4 }
-
-// Safari on a phone only tells how it is tilted once it has been allowed
-// to, which it has to be asked for.
-interface TiltPermission {
-  requestPermission?: () => Promise<'granted' | 'denied'>
-}
 
 function limit(spin: number) {
   return Math.max(-FASTEST, Math.min(FASTEST, spin))
@@ -945,15 +942,18 @@ export default function Starfield({
   className,
   onReady,
   onSway,
+  tilts = true,
 }: StarfieldProps) {
   const ref = useRef<HTMLCanvasElement>(null)
   const ready = useRef(onReady)
   const swayed = useRef(onSway)
+  const tilting = useRef(tilts)
 
   useEffect(() => {
     ready.current = onReady
     swayed.current = onSway
-  }, [onReady, onSway])
+    tilting.current = tilts
+  }, [onReady, onSway, tilts])
   // A canvas only ever has the one context, and a context that is lost
   // stays lost. So when that happens the canvas is replaced by a new one,
   // which this counts, and the sky is set up again on that.
@@ -1252,6 +1252,16 @@ export default function Starfield({
       if (event.beta == null || event.gamma == null) return
       if (!tiltable.matches || still.matches) return
 
+      // With the tilt turned off the earth goes back to its place, and the
+      // way the phone is held when it is turned on again is level.
+      if (!tilting.current) {
+        if (level) lean = { x: 0, y: 0 }
+
+        level = null
+
+        return
+      }
+
       const turn = ((screen.orientation?.angle ?? 0) * Math.PI) / 180
       const right = event.gamma * Math.cos(turn) + event.beta * Math.sin(turn)
       const down = event.beta * Math.cos(turn) - event.gamma * Math.sin(turn)
@@ -1274,28 +1284,10 @@ export default function Starfield({
       }
     }
 
-    // Safari only lets itself be asked from a tap, so the first one on the
-    // page that is not on a link asks. A touch that scrolled the page is
-    // not one, and is turned down without the visitor being asked, so the
-    // asking goes on until there is an answer.
-    const permission = (
-      'DeviceOrientationEvent' in window ? DeviceOrientationEvent : {}
-    ) as TiltPermission
-
-    function ask(event: TouchEvent) {
-      if (event.target instanceof Element && event.target.closest('a, button'))
-        return
-
-      permission
-        .requestPermission?.()
-        .then(() => window.removeEventListener('touchend', ask))
-        .catch(() => {})
-    }
-
+    // Safari on a phone only tells how it is tilted once the visitor has
+    // allowed it to, which the page asks for (see NotFound). What listens
+    // here is told from then on.
     window.addEventListener('deviceorientation', tilt)
-    if (permission.requestPermission) {
-      window.addEventListener('touchend', ask)
-    }
     window.addEventListener('pointerdown', grab)
     window.addEventListener('pointermove', drag)
     window.addEventListener('pointerup', release)
@@ -1482,7 +1474,6 @@ export default function Starfield({
       gone = true
       cancelAnimationFrame(frame)
       window.removeEventListener('deviceorientation', tilt)
-      window.removeEventListener('touchend', ask)
       window.removeEventListener('pointerdown', grab)
       window.removeEventListener('pointermove', drag)
       window.removeEventListener('pointerup', release)

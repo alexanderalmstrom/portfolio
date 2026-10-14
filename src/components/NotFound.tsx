@@ -29,6 +29,18 @@ const PATIENCE = 8000
 // in front of the earth, the way the moon behind it goes less far.
 const NEAR = 1.4
 
+// Safari on a phone only tells how it is tilted once the visitor has
+// allowed it to, which it has to be asked for.
+interface TiltPermission {
+  requestPermission?: () => Promise<'granted' | 'denied'>
+}
+
+function tiltPermission() {
+  return (
+    'DeviceOrientationEvent' in window ? DeviceOrientationEvent : {}
+  ) as TiltPermission
+}
+
 interface GlitchProps {
   children: ReactNode
 }
@@ -253,6 +265,87 @@ function Heading() {
   ))
 }
 
+interface MotionProps {
+  // Whether the page gives way to the tilt of the phone.
+  on: boolean
+  onChange: (on: boolean) => void
+}
+
+// The switch that turns the tilt of the phone on and off, which the sky
+// and the text give way to (see Starfield). Safari only tells the tilt once
+// the visitor has allowed it to. It only lets itself be asked from a tap,
+// and only a tap on something that is there to be tapped is sure to count
+// as one, so turning the switch on is what asks. It is on already when the
+// tilt is told without asking, as it is for the rest of a visit that it has
+// been allowed in. A visitor who turns the question down is told so, and
+// the switch stays off, as Safari does not ask twice.
+//
+// The switch is a track of frosted glass, which the sky shows through
+// blurred, with a knob that goes across it and from white to green. It is
+// shown on what can tell its tilt: a screen without a pointer to hover
+// with, with motion that is not reduced, in a browser that either wants to
+// be asked for the tilt or tells it without, which is known once it has.
+// So a phone that is not Safari gets the switch, turned on, a moment into
+// the page.
+function Motion({ on, onChange }: MotionProps) {
+  const [mobile] = useState(
+    () =>
+      window.matchMedia('(hover: none)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
+  const [answer, setAnswer] = useState<'granted' | 'denied' | null>(null)
+
+  useEffect(() => {
+    if (!mobile || answer) return
+
+    function told(event: DeviceOrientationEvent) {
+      if (event.beta != null) setAnswer('granted')
+    }
+
+    window.addEventListener('deviceorientation', told)
+
+    return () => window.removeEventListener('deviceorientation', told)
+  }, [mobile, answer])
+
+  // Something that can tell its tilt either wants to be asked for it or
+  // has told it.
+  if (!mobile || !(tiltPermission().requestPermission || answer)) return null
+
+  const enabled = answer == 'granted' && on
+
+  return (
+    <p className="mt-6 mb-0 overflow-hidden text-xs">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        className="group/motion flex cursor-pointer items-center gap-3 py-2 tracking-[0.2em] uppercase disabled:cursor-default motion-safe:animate-rise"
+        style={{ animationDelay: `${(lines.length + 2) * STAGGER}s` }}
+        disabled={answer == 'denied'}
+        onClick={() => {
+          if (answer == 'granted') return onChange(!on)
+
+          tiltPermission()
+            .requestPermission?.()
+            .then((answer) => {
+              setAnswer(answer)
+              if (answer == 'granted') onChange(true)
+            })
+            .catch(() => {})
+        }}>
+        <span className="flex h-7 w-12 flex-none items-center rounded-full bg-white/15 p-1 backdrop-blur-md backdrop-saturate-150">
+          <span className="size-5 rounded-full bg-white transition-[translate,background-color] duration-300 ease-out group-aria-checked/motion:translate-x-full group-aria-checked/motion:bg-[#30d158]" />
+        </span>
+        {answer == 'denied'
+          ? 'Motion not allowed'
+          : enabled
+            ? 'Motion enabled'
+            : 'Enable motion'}
+      </button>
+    </p>
+  )
+}
+
 export default function NotFound() {
   // Space is dark whatever theme the visitor prefers, so the whole site
   // goes dark for as long as this page is shown, along with the colour the
@@ -291,6 +384,9 @@ export default function NotFound() {
   }, [])
 
   const text = useRef<HTMLDivElement>(null)
+  // Whether the page gives way to the tilt of a phone, which the visitor
+  // can turn off (see Motion).
+  const [tilts, setTilts] = useState(true)
 
   return (
     <Container className="mt-10">
@@ -299,6 +395,7 @@ export default function NotFound() {
         <Starfield
           className="pointer-events-none fixed inset-0 -z-1 size-full"
           onReady={() => uncover.current?.()}
+          tilts={tilts}
           onSway={(right, down) => {
             if (!text.current) return
 
@@ -335,6 +432,7 @@ export default function NotFound() {
               </span>
             </span>
           </p>
+          <Motion on={tilts} onChange={setTilts} />
         </div>
       </div>
     </Container>
