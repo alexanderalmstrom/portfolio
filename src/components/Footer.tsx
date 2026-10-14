@@ -77,7 +77,9 @@ export default function Footer({ inert = false }: FooterProps) {
   return (
     <>
       <div ref={end} />
-      <footer className="sticky bottom-0 peer-has-data-sky:z-2" inert={inert}>
+      <footer
+        className="sticky bottom-0 peer-has-data-sky/main:z-2"
+        inert={inert}>
         <Container>
           <address className="flex w-full flex-wrap justify-between gap-x-16 gap-y-6 px-8 py-10 text-foreground/60 not-italic sm:pb-12">
             <div>
