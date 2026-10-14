@@ -96,6 +96,17 @@ const SWAY = 0.025
 const FAR = 0.3
 const FOLLOW = 3
 
+// The thunderstorms on the earth: how many there are at a time, and how
+// long each of them lasts and how far into that it starts out, in seconds.
+// The shader goes by the same numbers (see storms).
+const STORMS = 7
+
+function storm(index: number) {
+  const life = 7 + index * 1.7
+
+  return { life, headStart: life * ((index * 0.618) % 1) }
+}
+
 // A phone has no pointer, so there the earth gives way as the phone is
 // tilted instead: how far, measured like the sway above, and by how many
 // degrees the phone has to be tilted for all of it. The way the phone is
@@ -214,7 +225,8 @@ const sky = `
   uniform sampler2D uClouds;
   uniform sampler2D uMoon;
   uniform mat3 uGlobe;
-  uniform float uHeld;
+  // How the earth was turned when each of the storms came up.
+  uniform mat3 uBorn[${STORMS}];
   uniform vec2 uSway;
 
   ${exposure}
@@ -381,27 +393,29 @@ const sky = `
   vec2 storms(vec3 normal, vec2 disc, vec2 drift) {
     vec2 total = vec2(0.0);
 
-    for (int index = 0; index < 7; index++) {
+    for (int index = 0; index < ${STORMS}; index++) {
       float which = float(index);
       float life = 7.0 + which * 1.7;
-      float head_start = life * hash(vec2(which, 3.0));
+      float head_start = life * fract(which * 0.618);
       float clock = uSeconds + head_start;
       float run = floor(clock / life);
       float age = clock / life - run;
       vec2 seed = vec2(run, which * 7.0 + 1.0);
 
-      // Where the storm is seen in the middle of its life: on the far side
-      // of what is in view, but not so near the edge that a strike would
-      // stick out over it.
+      // Where the storm is seen in the middle of its life, on an earth that
+      // is left alone: on the far side of what is in view, but not so near
+      // the edge that a strike would stick out over it.
       float towards = 0.38 + 0.22 * hash(seed);
       float around = radians(55.0 + 85.0 * hash(seed + 3.0));
       vec3 spot = vec3(sqrt(1.0 - towards * towards) * vec2(cos(around), sin(around)), towards);
 
       // It stays with the cloud it is in, which turns with the earth: the
       // place on the map of the clouds is fixed, and where that is seen
-      // follows from it.
+      // follows from it. The place is picked by how the earth was turned
+      // when the storm came up, so an earth that is turned by hand since
+      // takes the storm along, out of sight if it is turned far enough.
       float middle = (run + 0.5) * life - head_start;
-      vec2 cloud = chart(uGlobe * spot) - vec2(middle / DAY * 1.2, 0.0);
+      vec2 cloud = chart(uBorn[index] * spot) - vec2(middle / DAY * 1.2, 0.0);
 
       // Read from a coarse level of the map, for the cloud over the whole
       // area and not at one point of it.
@@ -666,9 +680,7 @@ const sky = `
 
     ground *= 1.0 - 0.5 * shadow;
 
-    // No lightning strikes while the earth is held and turned by hand: the
-    // storms keep their place on the screen, not on the ground.
-    vec2 weather = storms(normal, disc, turn * 1.2) * (1.0 - uHeld);
+    vec2 weather = storms(normal, disc, turn * 1.2);
 
     float sun = dot(normal, SUN);
     float day = smoothstep(-0.12, 0.3, sun);
@@ -1080,6 +1092,10 @@ export default function Starfield({
     // up in the short side of the screen.
     let lean = { x: 0, y: 0 }
     const sway = { x: 0, y: 0 }
+    // Which life each storm is in, and how the earth was turned when that
+    // began: the storm is on the ground that was in view then.
+    const lives: number[] = []
+    const born = new Float32Array(STORMS * 9)
     // How the phone was held, in degrees to the right and down, and when.
     let level: { right: number; down: number; at: number } | null = null
     let drawn = start
@@ -1427,10 +1443,23 @@ export default function Starfield({
       gl!.useProgram(skyProgram)
       gl!.bindBuffer(gl!.ARRAY_BUFFER, corners)
       attribute(skyProgram!, 'aCorner', 2, 0, 0)
-      uniforms(skyProgram!, {
-        ...shared,
-        uHeld: Number(Boolean(held)),
-      })
+      uniforms(skyProgram!, shared)
+
+      for (let index = 0; index < STORMS; index++) {
+        const { life, headStart } = storm(index)
+        const run = Math.floor((clock + headStart) / life)
+
+        if (lives[index] == run) continue
+
+        lives[index] = run
+        born.set(earth.orientation, index * 9)
+      }
+
+      gl!.uniformMatrix3fv(
+        gl!.getUniformLocation(skyProgram!, 'uBorn'),
+        false,
+        born,
+      )
       gl!.uniform2f(
         gl!.getUniformLocation(skyProgram!, 'uResolution'),
         width,
