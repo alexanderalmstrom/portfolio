@@ -43,11 +43,18 @@
   --default-transition-timing-function: ease;
 
   --animate-loading-spin: loading-spin 1s infinite;
-  --animate-fade-in: fade-in 0.6s ease both;
-  --animate-rise: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-settle: settle 0.6s ease both;
-  --animate-slide: slide 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-slide-left: slide-left 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* What comes in when it is shown ends where it would be without the
+     animation, so only its start is held, while it waits for its delay.
+     Holding the end as well would keep the animation in effect, and Safari
+     keeps every element with one on a layer of its own. A project page has
+     an image on each of those, and on iOS the layers run out of memory once
+     the page is zoomed in and out a few times. */
+  --animate-fade-in: fade-in 0.6s ease backwards;
+  --animate-rise: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  --animate-settle: settle 0.6s ease backwards;
+  --animate-slide: slide 1.1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  --animate-slide-left: slide-left 0.9s cubic-bezier(0.16, 1, 0.3, 1)
+    backwards;
   /* The film grain (see Grain). One turn through its eight frames, so it
      changes 16 times a second. Each frame is held until the next one, as
      grain that slides reads as a texture that moves. */
