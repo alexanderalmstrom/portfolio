@@ -26,12 +26,14 @@ export default function Layout({ children }: LayoutProps) {
     // The sky of the not found page fills the screen, so there main is
     // neither filled nor clipped and the grain of the site shows as it is.
     // The footer lies over the sky instead of behind the page (see Footer).
+    // The group and the peer are named, as a card is a group of its own
+    // that hovering anywhere in main would otherwise set off (see Card).
     <div className="flex min-h-svh flex-col">
       <Header menuOpen={menuOpen} onMenuOpenChange={setMenuOpen} />
       <main
-        className="group peer relative z-1 grow bg-background pt-25 pb-6 [clip-path:inset(0)] has-data-sky:bg-transparent has-data-sky:[clip-path:none] sm:pt-30"
+        className="group/main peer/main relative z-1 grow bg-background pt-25 pb-6 [clip-path:inset(0)] has-data-sky:bg-transparent has-data-sky:[clip-path:none] sm:pt-30"
         inert={menuOpen}>
-        <Grain className="group-has-data-sky:hidden" />
+        <Grain className="group-has-data-sky/main:hidden" />
         {children}
       </main>
       <Footer inert={menuOpen} />
