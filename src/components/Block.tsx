@@ -7,19 +7,15 @@ import Hero from './Hero'
 interface BlockProps {
   entry?: BlockEntry
   loading?: 'lazy' | 'eager'
-  // Whether text rises line by line (see Column).
-  rise?: boolean
   // Whether images slide in from the right (see Image).
   slide?: boolean
 }
 
-export default function Block({ entry, loading, rise, slide }: BlockProps) {
+export default function Block({ entry, loading, slide }: BlockProps) {
   if (!entry || !entry.fields) return null
 
   if (isEntryOf(entry, 'content_block')) {
-    return (
-      <ContentBlock entry={entry} loading={loading} rise={rise} slide={slide} />
-    )
+    return <ContentBlock entry={entry} loading={loading} slide={slide} />
   }
 
   if (isEntryOf(entry, 'hero')) return <Hero entry={entry} />

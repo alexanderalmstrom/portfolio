@@ -16,7 +16,7 @@ export default function Grain({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'pointer-events-none fixed -inset-12 -z-1 bg-[url(/images/grain.png)] opacity-[0.075] motion-safe:animate-grain motion-safe:will-change-transform',
+        'pointer-events-none fixed -inset-12 -z-1 bg-[url(/images/grain.png)] opacity-[0.05] motion-safe:animate-grain motion-safe:will-change-transform',
         className,
       )}
       aria-hidden="true"

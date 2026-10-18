@@ -9,7 +9,6 @@ import Image from './Image'
 interface ContentBlockProps {
   entry?: ContentBlockEntry
   loading?: 'lazy' | 'eager'
-  rise?: boolean
   slide?: boolean
 }
 
@@ -45,7 +44,6 @@ function imagesAfter(columns: ContentBlockEntry['fields']['columns'] = []) {
 export default function ContentBlock({
   entry,
   loading,
-  rise,
   slide,
 }: ContentBlockProps) {
   if (!entry || !entry.fields) return null
@@ -78,7 +76,7 @@ export default function ContentBlock({
               if (!entry) return null
 
               if (isEntryOf(entry, 'column')) {
-                return <Column key={index} entry={entry} rise={rise} />
+                return <Column key={index} entry={entry} />
               }
 
               if (isEntryOf(entry, 'image')) {
