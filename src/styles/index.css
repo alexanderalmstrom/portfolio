@@ -59,9 +59,10 @@
      changes 16 times a second. Each frame is held until the next one, as
      grain that slides reads as a texture that moves. */
   --animate-grain: grain 0.3s step-end infinite;
-  /* The cover between two pages (see PageTransition). */
-  --animate-cover: cover 0.7s cubic-bezier(0.76, 0, 0.24, 1) both;
-  --animate-uncover: uncover 0.7s cubic-bezier(0.76, 0, 0.24, 1) both;
+  /* The cover between two pages (see PageTransition). Quick, so going from
+     one page to the next does not feel held up by it. */
+  --animate-cover: cover 0.4s cubic-bezier(0.45, 0, 0.55, 1) both;
+  --animate-uncover: uncover 0.4s cubic-bezier(0.45, 0, 0.55, 1) both;
 
   /* The not found page glitches like a bad video signal: short bursts with
      long calm stretches between them. Every part jumps between its keyframes

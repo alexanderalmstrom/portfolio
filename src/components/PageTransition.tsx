@@ -11,10 +11,6 @@ import { prefetchPage } from '../lib/prefetch'
 import Grain from './Grain'
 import Loading from './Loading'
 
-// How long the cover stays in place, in milliseconds, so the triangle on it
-// is seen to turn.
-const HOLD = 200
-
 // Going from one page to another is held back for the cover to come in,
 // whether a link was followed or the visitor went back or forward. Not with
 // reduced motion, where the next page just shows.
@@ -49,12 +45,12 @@ export default function PageTransition() {
     if (next) prefetchPage(next, queryClient).catch(() => {})
   }, [next, queryClient])
 
-  // The next page is let through after the hold, and the cover leaves once
-  // it is there, which can take a while the first time a project or a page
-  // is opened (see App). It mounts as the cover starts to leave, unless it
-  // holds the cover, which then leaves when it is let go of. With reduced
-  // motion the cover is only ever up for a page that holds it, and is
-  // taken away without being seen to leave.
+  // The next page is let through as soon as the cover is in place, and the
+  // cover leaves once it is there, which can take a while the first time a
+  // project or a page is opened (see App). It mounts as the cover starts to
+  // leave, unless it holds the cover, which then leaves when it is let go
+  // of. With reduced motion the cover is only ever up for a page that holds
+  // it, and is taken away without being seen to leave.
   useEffect(() => {
     if (stage == 'idle' && isCoverHeld() && blocker.state == 'unblocked') {
       setStage('covered')
@@ -76,11 +72,7 @@ export default function PageTransition() {
       return
     }
 
-    if (blocker.state != 'blocked') return
-
-    const timeout = setTimeout(blocker.proceed, HOLD)
-
-    return () => clearTimeout(timeout)
+    if (blocker.state == 'blocked') blocker.proceed()
   }, [stage, blocker, held])
 
   // The page that is uncovered waits with its animations until the cover
