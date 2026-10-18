@@ -227,7 +227,6 @@ export default function Project() {
                     key={index}
                     entry={entry}
                     loading={index == eagerBlock ? 'eager' : 'lazy'}
-                    rise
                     slide
                   />
                 )

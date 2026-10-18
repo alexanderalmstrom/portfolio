@@ -77,10 +77,19 @@ function cloneLine(line: Range, element: HTMLElement) {
   return content
 }
 
+// Lets an element fade in and settle from below as a whole. Returns a
+// function that takes the animation away.
+export function settle(element: HTMLElement) {
+  element.classList.add('animate-settle')
+
+  return () => element.classList.remove('animate-settle')
+}
+
 // Splits the text of an element into its rendered lines and lets each one
-// rise through a mask of its own (see Hero), starting at the given place in
-// the stagger. The original content is put back when the last line has
-// risen, so the text wraps freely again.
+// rise through a mask of its own (see Hero), one after the other from the
+// given place in the stagger. The original content is put back when the
+// last line has risen, so the text wraps freely again. Returns a function
+// that puts it back sooner.
 export function riseLines(element: HTMLElement, first = 0) {
   const lines = measureLines(element)
 
@@ -118,5 +127,5 @@ export function riseLines(element: HTMLElement, first = 0) {
     { once: true },
   )
 
-  return { count: lines.length, restore }
+  return restore
 }
