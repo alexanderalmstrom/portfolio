@@ -53,9 +53,11 @@ function Title({ children }: { children: string }) {
   )
 }
 
-// The cards of the previous and the next project, which end the page. The
-// space above them is as much as the footer of the site leaves below them
-// (see Footer), and the last block above adds nothing to it (see below).
+// The cards of the previous and the next project, which end the page. They
+// are set apart from the images above them by more than the images are
+// from each other, and from the footer by its own padding (see Footer).
+// The last block above adds nothing to the space above them (see below),
+// and main nothing to the space below them (see Layout).
 //
 // The cards run from edge to edge on small screens. There each takes nearly
 // all of the width, in a row that scrolls sideways, so the next project
@@ -65,9 +67,10 @@ function Title({ children }: { children: string }) {
 //
 // From sm up the two share the width of a row that is as tall as two
 // portrait cards side by side are, and the one that is hovered takes some
-// of the width of the other. The side padding is that of the container and
-// of an image column together (see Container and Image), which keeps the
-// cards clear of the site title and in line with the images above them.
+// of the width of the other. The row sits in a wide container, so it
+// reaches further than the images above it (see Container), and the cards
+// are kept as far apart as two images side by side are (see Image). On
+// small screens they touch.
 //
 // A project that is the only other one is both the previous and the next,
 // and gets the whole width.
@@ -110,38 +113,40 @@ function Links({ links, isPair }: { links: ProjectLink[]; isPair: boolean }) {
   }, [links, isPair])
 
   return (
-    <footer className="mx-auto max-w-400 pt-10 sm:pr-16 sm:pl-38">
-      <div
-        ref={row}
-        className={cn(
-          'flex max-sm:snap-x max-sm:snap-mandatory max-sm:scrollbar-none max-sm:flex-row-reverse max-sm:overflow-x-auto max-sm:overscroll-x-contain',
-          isPair && 'sm:aspect-16/11',
-        )}>
-        {links.map(({ entry, label, classNames }) => (
-          <Card
-            key={label}
-            to={`/project/${entry.fields.slug}`}
-            title={entry.fields.name}
-            label={label}
-            image={entry.fields.image}
-            width={isPair ? 'pair' : 'full'}
-            aspect={isPair ? 'portrait' : 'landscape'}
-            titlePosition="center"
-            size={isPair ? 'md' : 'lg'}
-            classNames={{
-              ...classNames,
-              title: cn(isPair && 'max-sm:text-4xl'),
-              media: cn(
-                classNames.media,
-                isPair &&
-                  (label == current
-                    ? 'max-sm:[&_img]:scale-105! max-sm:[&_img]:opacity-100!'
-                    : 'max-sm:[&_img]:opacity-50!'),
-              ),
-            }}
-          />
-        ))}
-      </div>
+    <footer className="pt-12 sm:pt-24 xl:pt-32">
+      <Container wide>
+        <div
+          ref={row}
+          className={cn(
+            'flex w-full max-sm:snap-x max-sm:snap-mandatory max-sm:scrollbar-none max-sm:flex-row-reverse max-sm:overflow-x-auto max-sm:overscroll-x-contain sm:gap-16',
+            isPair && 'sm:aspect-16/11',
+          )}>
+          {links.map(({ entry, label, classNames }) => (
+            <Card
+              key={label}
+              to={`/project/${entry.fields.slug}`}
+              title={entry.fields.name}
+              label={label}
+              image={entry.fields.image}
+              width={isPair ? 'pair' : 'full'}
+              aspect={isPair ? 'portrait' : 'landscape'}
+              titlePosition="center"
+              size={isPair ? 'md' : 'lg'}
+              classNames={{
+                ...classNames,
+                title: cn(isPair && 'max-sm:text-4xl'),
+                media: cn(
+                  classNames.media,
+                  isPair &&
+                    (label == current
+                      ? 'max-sm:[&_img]:scale-105! max-sm:[&_img]:opacity-100!'
+                      : 'max-sm:[&_img]:opacity-50!'),
+                ),
+              }}
+            />
+          ))}
+        </div>
+      </Container>
     </footer>
   )
 }
@@ -204,7 +209,7 @@ export default function Project() {
   // An image that is about to slide in reaches past the right edge of a
   // small screen, which is cut off here so the page cannot scroll sideways.
   // The negative margin cancels the bottom padding of main (see Layout), so
-  // the cards end the page.
+  // the space below the cards is theirs alone.
   return (
     <article
       key={entry.sys.id}
