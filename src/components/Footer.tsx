@@ -33,8 +33,8 @@ interface FooterProps {
 // the title of the site (see Header), and the role in the grey of the body
 // text.
 //
-// On the not found page the footer lies over the sky (see Layout), and the
-// logo is left out, where it would lie over the earth.
+// There is no footer on the not found page, whose sky fills the screen
+// (see Layout).
 //
 // The logo is as tall as the width of the screen allows from sm up and no
 // more than a share of its height, so the whole footer fits on the screen.
@@ -72,7 +72,7 @@ export default function Footer({ inert = false }: FooterProps) {
   return (
     <footer
       ref={footer}
-      className="relative peer-has-data-sky/main:z-2"
+      className="peer-has-data-sky/main:hidden"
       inert={inert}>
       <Container wide>
         <div className="flex w-full items-end justify-between gap-x-6 px-8 py-12 text-foreground/60 sm:items-center sm:gap-x-16 sm:px-0 sm:py-24">
@@ -88,7 +88,7 @@ export default function Footer({ inert = false }: FooterProps) {
               square, so it sits in the corner. */}
           <Logo
             className={cn(
-              'block aspect-[390.2/500] h-10 w-auto flex-none fill-foreground sm:mr-7.5 sm:h-[min(20vw,25svh)] [main:has([data-sky])~footer_&]:hidden',
+              'block aspect-[390.2/500] h-10 w-auto flex-none fill-foreground sm:mr-7.5 sm:h-[min(20vw,25svh)]',
               settle,
             )}
             style={{ animationDelay: `${STAGGER}s` }}

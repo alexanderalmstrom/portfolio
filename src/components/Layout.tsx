@@ -27,7 +27,7 @@ export default function Layout({ children }: LayoutProps) {
     //
     // The sky of the not found page fills the screen, so there main is
     // neither filled nor clipped and the grain of the site shows as it is.
-    // The footer lies over the sky (see Footer).
+    // The footer is left out there (see Footer).
     // The group and the peer are named, as a card is a group of its own
     // that hovering anywhere in main would otherwise set off (see Card).
     <div className="flex min-h-svh flex-col">
