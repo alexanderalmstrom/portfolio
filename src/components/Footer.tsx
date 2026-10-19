@@ -13,10 +13,10 @@ interface FooterProps {
   inert?: boolean
 }
 
-// Who the site is by: the name to the left and the role to the right, small
-// and in the grey of the body text, at the bottom of the page. The footer
-// has the side padding of the header, so the name is in line with the logo
-// and the role with the links (see Header).
+// Who the site is by: the name to the left and the role to the right, small,
+// at the bottom of the page, with the role in the grey of the body text. The
+// footer has the side padding of the header, so the name is in line with the
+// logo and the role with the links (see Header).
 //
 // There is no footer on the not found page, whose sky fills the screen
 // (see Layout).
@@ -61,7 +61,7 @@ export default function Footer({ inert = false }: FooterProps) {
           'flex w-full flex-wrap items-baseline justify-between gap-x-6 px-12 pt-12 pb-8 text-sm text-foreground/60 sm:px-16 sm:pt-24',
           settle,
         )}>
-        <span className="font-medium">{space?.name}</span>
+        <strong className="font-medium">{space?.name}</strong>
         <span className="sm:mr-7.5">{ROLE}</span>
       </div>
     </footer>
