@@ -18,7 +18,7 @@ import Card from './Card'
 interface ProjectLink {
   entry: ProjectEntry
   label: string
-  classNames: { root: string; media: string }
+  classNames: { root: string }
 }
 
 // How much of a card has to show in the row for it to be the current one.
@@ -66,8 +66,7 @@ function Title({ children }: { children: string }) {
 // order of the previous project puts it back on the left.
 //
 // From sm up the two share the width of a row that is as tall as two
-// portrait cards side by side are, and the one that is hovered takes some
-// of the width of the other. The row sits in a wide container, so it
+// portrait cards side by side are. The row sits in a wide container, so it
 // reaches further than the images above it (see Container), and the cards
 // are kept as far apart as two images side by side are (see Image). On
 // small screens they touch.
@@ -136,7 +135,6 @@ function Links({ links, isPair }: { links: ProjectLink[]; isPair: boolean }) {
                 ...classNames,
                 title: cn(isPair && 'max-sm:text-4xl'),
                 media: cn(
-                  classNames.media,
                   isPair &&
                     (label == current
                       ? 'max-sm:[&_img]:scale-105! max-sm:[&_img]:opacity-100!'
@@ -171,8 +169,7 @@ export default function Project() {
 
   // With only two projects the previous one is the next one as well. The
   // classes of the root are for the row the two scroll in on small screens
-  // (see below). Those of the media hold each image to the outer edge of
-  // its card from sm up, so it stays in place as the card grows.
+  // (see Links).
   const isPair = hasNext && previous !== next
   const links: ProjectLink[] = [
     ...(isPair
@@ -180,10 +177,7 @@ export default function Project() {
           {
             entry: previous,
             label: 'Previous project',
-            classNames: {
-              root: 'max-sm:order-1 max-sm:snap-start',
-              media: 'sm:[&_picture]:left-0',
-            },
+            classNames: { root: 'max-sm:order-1 max-sm:snap-start' },
           },
         ]
       : []),
@@ -192,10 +186,7 @@ export default function Project() {
           {
             entry: next,
             label: 'Next project',
-            classNames: {
-              root: 'max-sm:snap-end',
-              media: 'sm:[&_picture]:right-0',
-            },
+            classNames: { root: 'max-sm:snap-end' },
           },
         ]
       : []),
