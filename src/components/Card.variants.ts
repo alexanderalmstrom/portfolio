@@ -22,23 +22,17 @@ export const cardVariants = tv({
     // (see Home). Full is as wide as the row it is in (see Project). Pair is
     // for two cards that sit side by side, with a gap between them from sm
     // up. Below sm each takes nearly all of the row, which scrolls, and the
-    // rest shows the edge of the other card. From sm up they share a row that
-    // sets the height (see Project), so the one that is hovered or holds the
-    // focus can grow wider at the cost of the other without the row getting
-    // any taller.
+    // rest shows the edge of the other card. From sm up they share the width
+    // of a row that sets the height (see Project).
     width: {
       half: { root: 'sm:w-[calc(50%-1rem)] xl:w-[calc(50%-2rem)]' },
       full: {},
       pair: {
-        root: 'w-[92%] sm:h-full sm:min-w-0 sm:flex-1 sm:transition-[flex-grow] sm:duration-500 sm:ease-out sm:motion-reduce:transition-none sm:can-hover:hover:grow-[1.25] sm:can-hover:has-focus-visible:grow-[1.25]',
+        root: 'w-[92%] sm:h-full sm:min-w-0 sm:flex-1',
         link: 'sm:h-full',
-        // The image is laid out at the size it would have in the wider card
-        // without the gap, so growing only uncovers more of it. Fitting it to the card instead
-        // would leave it still at first and then make it grow all at once.
-        // It zooms in a little as the card grows, where other cards zoom
-        // out.
+        // The image zooms in a little on hover, where other cards zoom out.
         media:
-          'sm:relative sm:aspect-auto sm:h-full group-hover:[&_img]:scale-105 can-hover:[&_img]:scale-100 sm:[&_picture]:absolute sm:[&_picture]:inset-y-0 sm:[&_picture]:aspect-80/99',
+          'sm:aspect-auto sm:h-full group-hover:[&_img]:scale-105 can-hover:[&_img]:scale-100',
       },
     },
     // Every image is cropped to the same ratio, so the rows of a grid line
@@ -115,9 +109,8 @@ export type CardSlot = keyof ReturnType<typeof cardVariants>
 // Home and Container). A full width card fills the viewport on small
 // screens, then what the padding of the wide container leaves, up to its
 // max width (see Project). Each card of a pair fills nearly all of the
-// viewport on small screens. From sm up its image is 1.25 of the 2.25 shares of what
-// the padding of the wide container leaves, which is a little wider than
-// the card is when it has grown, as the gap is left out.
+// viewport on small screens, then half of what the padding of the wide
+// container and the gap leave.
 export const CARD_IMAGE: Record<CardWidth, { width: number; sizes: string }> = {
   half: {
     width: 1170,
@@ -132,6 +125,6 @@ export const CARD_IMAGE: Record<CardWidth, { width: number; sizes: string }> = {
   pair: {
     width: 2000,
     sizes:
-      '(min-width: 120rem) 59.17rem, (min-width: 48rem) calc(55.56vw - 7.5rem), 92vw',
+      '(min-width: 120rem) 51.25rem, (min-width: 48rem) calc(50vw - 8.75rem), 92vw',
   },
 }
