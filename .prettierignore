@@ -1,2 +1,3 @@
 public/
-build/
+.output/
+src/routeTree.gen.ts

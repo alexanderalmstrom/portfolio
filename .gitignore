@@ -1,7 +1,9 @@
 .DS_Store
 *.log
 node_modules/
-build/
+.output/
+.nitro/
+.tanstack/
 .env
 stats.json
 .vercel

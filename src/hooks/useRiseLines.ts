@@ -10,6 +10,10 @@ export const HEADINGS = 'h1, h2, h3, h4, h5, h6'
 // it mounts (see lib/riseLines). The elements matching the selector rise
 // line by line, each a step after the one before it, and the rest of the
 // text fades in and settles as a whole, all at once.
+//
+// The element is marked with data-rise-lines, which hides it on a page
+// rendered on the server until the browser has taken it over and split it
+// into lines (see the styles).
 export function useRiseLines<T extends HTMLElement>(rise: string) {
   const ref = useRef<T>(null)
 

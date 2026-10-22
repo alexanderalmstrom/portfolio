@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from '@tanstack/react-router'
 
 import { useSpace } from '../hooks/queries'
 import { ROLE } from '../lib/contact'
@@ -51,7 +51,8 @@ export default function Header({ menuOpen, onMenuOpenChange }: HeaderProps) {
                 <Link
                   className="block no-underline motion-safe:animate-rise"
                   style={{ animationDelay: `${STAGGER * 2}s` }}
-                  to="/page/about">
+                  to="/page/$slug"
+                  params={{ slug: 'about' }}>
                   About
                 </Link>
               </li>

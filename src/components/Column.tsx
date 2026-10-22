@@ -30,6 +30,7 @@ export default function Column({ entry }: ColumnProps) {
     <div
       ref={ref}
       className={cn(columnClass(size), 'px-8 text-foreground/60')}
+      data-rise-lines=""
       dangerouslySetInnerHTML={html}
     />
   )

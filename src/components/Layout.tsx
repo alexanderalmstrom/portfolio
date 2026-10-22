@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from '@tanstack/react-router'
 
 import Grain from './Grain'
 import Header from './Header'
@@ -13,7 +13,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   // The page behind the open menu of small screens cannot be reached.
   const [menuOpen, setMenuOpen] = useState(false)
-  const { pathname } = useLocation()
+  const pathname = useLocation({ select: (location) => location.pathname })
 
   return (
     // The page is at least as tall as the screen and main takes what is

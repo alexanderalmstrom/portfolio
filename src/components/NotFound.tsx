@@ -13,7 +13,6 @@ import { cn } from '../lib/cn'
 import { holdCover } from '../lib/cover'
 
 import Container from './Container'
-import DocumentMeta from './DocumentMeta'
 
 // The sky is by far the largest part of the site and only this page shows
 // it, so it is loaded when the page is. The page stays covered until the
@@ -286,14 +285,19 @@ interface MotionProps {
 // with, with motion that is not reduced, in a browser that either wants to
 // be asked for the tilt or tells it without, which is known once it has.
 // So a phone that is not Safari gets the switch, turned on, a moment into
-// the page.
+// the page. What the screen can do is only known in the browser, so a page
+// rendered on the server leaves the switch out until the browser has taken
+// over.
 function Motion({ on, onChange }: MotionProps) {
-  const [mobile] = useState(
-    () =>
-      window.matchMedia('(hover: none)').matches &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  )
+  const [mobile, setMobile] = useState(false)
   const [answer, setAnswer] = useState<'granted' | 'denied' | null>(null)
+
+  useEffect(() => {
+    setMobile(
+      window.matchMedia('(hover: none)').matches &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    )
+  }, [])
 
   useEffect(() => {
     if (!mobile || answer) return
@@ -390,7 +394,6 @@ export default function NotFound() {
 
   return (
     <Container className="mt-10">
-      <DocumentMeta title="Page not found" />
       <Suspense>
         <Starfield
           className="pointer-events-none fixed inset-0 -z-1 size-full"

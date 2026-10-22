@@ -3,6 +3,10 @@
 // useSpace).
 export const ROLE = 'Senior Frontend Engineer / Designer'
 
+// What the site is about, as search engines and shared links show it.
+export const DESCRIPTION =
+  'Senior Frontend Engineer and UI/UX Designer from Stockholm, Sweden. I craft web and e-commerce solutions with attention to detail.'
+
 export const CONTACT = [
   {
     href: 'mailto:info@alexanderalmstrom.com',

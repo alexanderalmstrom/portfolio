@@ -1,5 +1,3 @@
-import DocumentMeta from './DocumentMeta'
-
 interface SadMacProps {
   onRestart?: () => void
 }
@@ -38,7 +36,6 @@ const mac = [
 export default function SadMac({ onRestart }: SadMacProps) {
   return (
     <div className="fixed top-0 left-0 flex size-full flex-col items-center justify-center overflow-auto bg-black p-8 text-center font-mono text-white motion-safe:animate-fade-in">
-      <DocumentMeta title="x_x" />
       <svg
         className="mb-8 h-32 w-auto flex-none md:h-40"
         viewBox={`0 0 ${mac[0].length} ${mac.length}`}

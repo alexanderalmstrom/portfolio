@@ -1,15 +1,11 @@
-export function createEvent(
-  name: string,
-  params: CustomEventInit = {
-    bubbles: false,
-    cancelable: false,
-    detail: undefined,
-  },
-) {
-  return new CustomEvent(name, params)
-}
+import { createIsomorphicFn } from '@tanstack/react-start'
+import { getRequestHeader } from '@tanstack/react-start/server'
 
-// iPhones and iPads count as Apple devices too.
-export function isApple() {
-  return /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
-}
+const APPLE = /Mac|iPhone|iPad|iPod/
+
+// iPhones and iPads count as Apple devices too. A page rendered on the
+// server goes by the browser that asked for it, so it renders the same in
+// that browser.
+export const isApple = createIsomorphicFn()
+  .server(() => APPLE.test(getRequestHeader('user-agent') ?? ''))
+  .client(() => APPLE.test(navigator.userAgent))

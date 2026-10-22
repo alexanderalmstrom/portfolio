@@ -1,12 +1,12 @@
 import { useEffect, useId, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from '@tanstack/react-router'
 
 import { cn } from '../lib/cn'
 import { CONTACT, ROLE } from '../lib/contact'
 
 import Grain from './Grain'
 
-const LINKS = [{ to: '/page/about', label: 'About' }]
+const LINKS = [{ slug: 'about', label: 'About' }]
 
 // Seconds between the links starting to slide in from the left when the
 // dialog opens and the lines below them starting to rise, and how long the
@@ -52,7 +52,7 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
 
     // The page stays where it was scrolled to, it just cannot be scrolled
     // further. Taking the body out of the flow instead would reset the scroll
-    // position that ScrollRestoration saves when a link is followed.
+    // position that the router saves when a link is followed.
     const { overflow } = document.documentElement.style
     document.documentElement.style.overflow = 'hidden'
 
@@ -106,15 +106,16 @@ export default function MobileNav({ open, onOpenChange }: MobileNavProps) {
         <Grain />
         <nav>
           <ul className="mb-0">
-            {LINKS.map(({ to, label }, index) => (
-              <li key={to} className="mb-2 pb-1">
+            {LINKS.map(({ slug, label }, index) => (
+              <li key={slug} className="mb-2 pb-1">
                 <Link
                   className={cn(
                     'block text-[2.5rem] leading-[1.1] font-medium tracking-[-0.02em] no-underline',
                     open && 'motion-safe:animate-slide-left',
                   )}
                   style={{ animationDelay: `${DELAY + STAGGER * index}s` }}
-                  to={to}>
+                  to="/page/$slug"
+                  params={{ slug }}>
                   {label}
                 </Link>
               </li>
