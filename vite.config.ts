@@ -1,44 +1,9 @@
-import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig } from 'vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import { nitro } from 'nitro/vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import svgr from 'vite-plugin-svgr'
-
-// Emits sw.js with the hashed bundle files filled into its precache list.
-// Only the client build has files the browser loads. The pages themselves
-// are rendered on the server for every request, so they are left out and
-// always come from the network.
-function serviceWorker(): Plugin {
-  return {
-    name: 'service-worker',
-    apply: 'build',
-    enforce: 'post',
-    applyToEnvironment: (environment) => environment.name == 'client',
-    generateBundle(_, bundle) {
-      const assets = Object.keys(bundle)
-        .filter((fileName) => /\.(js|css)$/.test(fileName))
-        .map((fileName) => `/${fileName}`)
-
-      // Each build caches its files under a name of its own, so the worker
-      // of the next one can tell which caches to clear.
-      const version = createHash('sha256')
-        .update(assets.join())
-        .digest('hex')
-        .slice(0, 8)
-
-      this.emitFile({
-        type: 'asset',
-        fileName: 'sw.js',
-        source: readFileSync('src/sw.js', 'utf8')
-          .replace('__PRECACHE__', JSON.stringify(assets))
-          .replace('__CACHE__', JSON.stringify(`alexanderalmstrom-${version}`)),
-      })
-    },
-  }
-}
 
 export default defineConfig({
   // Start's plugin has to come before React's. Nitro builds the server for
@@ -58,7 +23,6 @@ export default defineConfig({
     react(),
     tailwindcss(),
     svgr(),
-    serviceWorker(),
   ],
 
   server: {

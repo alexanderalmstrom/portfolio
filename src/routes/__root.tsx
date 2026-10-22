@@ -115,12 +115,6 @@ function RootDocument({ children }: { children: ReactNode }) {
     // into lines (see useRiseLines), as is the cover of a page that is held
     // up by it (see PageTransition).
     document.documentElement.dataset.hydrated = ''
-
-    if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(function () {
-        console.log('Service Worker Registered')
-      })
-    }
   }, [])
 
   return (
