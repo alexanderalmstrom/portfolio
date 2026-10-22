@@ -8,3 +8,4 @@ node_modules/
 stats.json
 .vercel
 .env.local
+.env*
