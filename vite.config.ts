@@ -45,7 +45,16 @@ export default defineConfig({
   // the platform it runs on: Vercel when deployed there, Node otherwise.
   plugins: [
     tanstackStart(),
-    nitro(),
+    // The router and React Query mark their files "use client" for React
+    // Server Components, which this site doesn't use. Bundling the server
+    // drops the directive to no effect, so the warning about it is muted.
+    nitro({
+      rolldownConfig: {
+        onLog(level, log, handler) {
+          if (log.code != 'MODULE_LEVEL_DIRECTIVE') handler(level, log)
+        },
+      },
+    }),
     react(),
     tailwindcss(),
     svgr(),
