@@ -1,3 +1,5 @@
+import { createIsomorphicFn } from '@tanstack/react-start'
+
 import type { ImageAsset } from '../types/contentful'
 
 // The widths offered in srcSet. The browser picks one from the sizes attribute
@@ -41,14 +43,17 @@ export interface ImageRequest {
 }
 
 // Starts loading an image before anything shows it. It is requested the way
-// ImageContentful will ask for it, so the browser has it by then.
-export function preloadImage({ image, width, sizes }: ImageRequest) {
-  const sources = imageSources(image, width)
+// ImageContentful will ask for it, so the browser has it by then. Only in
+// the browser, as a page rendered on the server has its images in it.
+export const preloadImage = createIsomorphicFn().client(
+  ({ image, width, sizes }: ImageRequest) => {
+    const sources = imageSources(image, width)
 
-  if (!sources) return
+    if (!sources) return
 
-  const preloaded = new Image()
+    const preloaded = new Image()
 
-  preloaded.sizes = sizes
-  preloaded.srcset = sources.srcSet('webp')
-}
+    preloaded.sizes = sizes
+    preloaded.srcset = sources.srcSet('webp')
+  },
+)

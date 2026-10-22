@@ -1,5 +1,3 @@
-import DocumentMeta from './DocumentMeta'
-
 interface BlueScreenProps {
   onRestart?: () => void
 }
@@ -7,7 +5,6 @@ interface BlueScreenProps {
 export default function BlueScreen({ onRestart }: BlueScreenProps) {
   return (
     <div className="fixed top-0 left-0 flex size-full items-center overflow-auto bg-[#0078d7] p-8 [font-family:Segoe_UI,Selawik,Helvetica_Neue,Arial,sans-serif] font-light text-white motion-safe:animate-fade-in md:p-24">
-      <DocumentMeta title=":(" />
       <div className="max-w-3xl">
         <p className="mb-6 text-[6rem] leading-none md:mb-10 md:text-[9rem]">
           :(

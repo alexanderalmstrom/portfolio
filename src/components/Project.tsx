@@ -1,17 +1,17 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { getRouteApi } from '@tanstack/react-router'
 
-import { useProjects, useSpace } from '../hooks/queries'
+import { useProjects } from '../hooks/queries'
 import { firstImageBlock } from '../lib/blocks'
 import { cn } from '../lib/cn'
 import type { ProjectEntry } from '../types/contentful'
 
 import Container from './Container'
-import DocumentMeta from './DocumentMeta'
-import Loading from './Loading'
 import NotFound from './NotFound'
 import Block from './Block'
 import Card from './Card'
+
+const route = getRouteApi('/project/$slug')
 
 // A card that links on to another project, and the classes it adds to
 // those of the card (see Links).
@@ -123,7 +123,7 @@ function Links({ links, isPair }: { links: ProjectLink[]; isPair: boolean }) {
           {links.map(({ entry, label, classNames }) => (
             <Card
               key={label}
-              to={`/project/${entry.fields.slug}`}
+              slug={entry.fields.slug}
               title={entry.fields.name}
               label={label}
               image={entry.fields.image}
@@ -149,12 +149,11 @@ function Links({ links, isPair }: { links: ProjectLink[]; isPair: boolean }) {
   )
 }
 
+// The route has loaded the projects and made sure this is one of them, as
+// well as given the page its title (see routes/project.$slug).
 export default function Project() {
-  const { slug } = useParams()
-  const { data: projects = [], isPending } = useProjects()
-  const { data: space } = useSpace()
-
-  if (isPending) return <Loading />
+  const { slug } = route.useParams()
+  const { data: projects } = useProjects()
 
   const index = projects.findIndex((entry) => entry.fields.slug === slug)
   const entry = projects[index]
@@ -206,10 +205,6 @@ export default function Project() {
       key={entry.sys.id}
       className={cn('overflow-x-clip', hasNext ? '-mb-6' : 'sm:mb-10')}>
       <Container>
-        <DocumentMeta
-          title={`${entry.fields.name} - ${space?.name}`}
-          description={entry.fields.description}
-        />
         <Title>{entry.fields.name}</Title>
         {/* The last block gives up its bottom margin when cards follow,
               which keep their own distance to it (see Links). */}

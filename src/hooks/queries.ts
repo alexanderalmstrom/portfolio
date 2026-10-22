@@ -1,34 +1,45 @@
-import { queryOptions, useQuery } from '@tanstack/react-query'
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
+import { useSearch } from '@tanstack/react-router'
 
-import { getSpace } from '../services/contentful'
-import * as entryService from '../services/entry'
-import type { PageEntry, ProjectEntry } from '../types/contentful'
+import { getPage, getProjects, getSpace } from '../services/content'
 
-export function useSpace() {
-  return useQuery({
-    queryKey: ['space'],
-    queryFn: getSpace,
-  })
-}
-
-// The queries are also run ahead of the page that uses them (see
-// lib/prefetch), which has to ask for them in the same way.
-export const projectsQuery = queryOptions({
-  queryKey: ['projects'],
-  queryFn: () => entryService.getEntries<ProjectEntry>('project'),
+// The queries are run by the loader of the route that shows them, which
+// renders on the server with them in place, and read here by the components
+// of the route. Both have to ask for them in the same way.
+export const spaceQuery = queryOptions({
+  queryKey: ['space'],
+  queryFn: () => getSpace(),
 })
 
-export const pageQuery = (slug?: string) =>
+export const projectsQuery = (preview: boolean) =>
   queryOptions({
-    queryKey: ['page', slug],
-    queryFn: () => entryService.getEntryBySlug<PageEntry>('page', slug!),
-    enabled: Boolean(slug),
+    queryKey: ['projects', preview],
+    queryFn: () => getProjects({ data: { preview } }),
   })
 
-export function useProjects() {
-  return useQuery(projectsQuery)
+export const pageQuery = (slug: string, preview: boolean) =>
+  queryOptions({
+    queryKey: ['page', slug, preview],
+    queryFn: () => getPage({ data: { slug, preview } }),
+  })
+
+// Whether the page was opened with ?preview, which asks for drafts (see the
+// root route).
+export function usePreview() {
+  return useSearch({
+    from: '__root__',
+    select: (search) => Boolean(search.preview),
+  })
 }
 
-export function usePage(slug?: string) {
-  return useQuery(pageQuery(slug))
+export function useSpace() {
+  return useSuspenseQuery(spaceQuery)
+}
+
+export function useProjects() {
+  return useSuspenseQuery(projectsQuery(usePreview()))
+}
+
+export function usePage(slug: string) {
+  return useSuspenseQuery(pageQuery(slug, usePreview()))
 }

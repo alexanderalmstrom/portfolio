@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '@tanstack/react-router'
 import type { VariantProps } from 'tailwind-variants/lite'
 
 import { useLoaded } from '../hooks/useLoaded'
@@ -15,7 +15,8 @@ import ImageContentful from './ImageContentful'
 type CardVariantProps = Omit<VariantProps<typeof cardVariants>, 'hasImage'>
 
 interface CardProps extends CardVariantProps {
-  to: string
+  // The project the card links to.
+  slug: string
   title: ReactNode
   // A line above the title, such as "Next project".
   label?: ReactNode
@@ -29,7 +30,7 @@ interface CardProps extends CardVariantProps {
 
 // The whole card, title included, fades in once its image has loaded.
 export default function Card({
-  to,
+  slug,
   title,
   label,
   image,
@@ -57,7 +58,10 @@ export default function Card({
           className: [animateIn(isLoaded || !image, rise), classNames?.root],
         }),
       )}>
-      <Link to={to} className={cn(linkSlot({ className: classNames?.link }))}>
+      <Link
+        to="/project/$slug"
+        params={{ slug }}
+        className={cn(linkSlot({ className: classNames?.link }))}>
         {image ? (
           <div className={cn(mediaSlot({ className: classNames?.media }))}>
             <ImageContentful

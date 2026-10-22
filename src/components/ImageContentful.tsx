@@ -39,6 +39,15 @@ export default function ImageContentful({
 
   const { original, largest, url, srcSet } = sources
 
+  const loaded = onLoad ?? handleLoaded
+
+  // An image on a page rendered on the server can be there before the
+  // browser has taken the page over, and so before anything listens for it
+  // to load. It counts as loaded as soon as it is found to be complete.
+  const ref = (img: HTMLImageElement | null) => {
+    if (img?.complete) loaded()
+  }
+
   // Setting the size on the img reserves its space before it loads, so the
   // page already has its full height when a scroll position is restored.
   return (
@@ -46,6 +55,7 @@ export default function ImageContentful({
       <source type="image/webp" srcSet={srcSet('webp')} sizes={sizes} />
       {/* A failed image is shown as well, so its alt text is not left hidden. */}
       <img
+        ref={ref}
         className="w-full"
         src={url(format, largest)}
         srcSet={srcSet(format)}
@@ -59,8 +69,8 @@ export default function ImageContentful({
         }
         loading={loading}
         decoding="async"
-        onLoad={onLoad ?? handleLoaded}
-        onError={onLoad ?? handleLoaded}
+        onLoad={loaded}
+        onError={loaded}
       />
     </picture>
   )
